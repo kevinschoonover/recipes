@@ -3,9 +3,10 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, crane, fenix, flake-utils, advisory-db, ... }:
+  outputs = { self, nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -18,7 +19,7 @@
         devShells.default = pkgs.mkShell {
           packages = [
             pkgs.nodejs_20
-            pkgs.pnpm
+            pkgs.nodePackages.pnpm
             pkgs.turso-cli
           ];
         };
