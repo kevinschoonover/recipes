@@ -4,10 +4,15 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@auth/drizzle-adapter@0.3.9':
+    hash: ksi57dpz6iyskpt22swwiiuafy
+    path: patches/@auth__drizzle-adapter@0.3.9.patch
+
 dependencies:
   '@auth/drizzle-adapter':
     specifier: ^0.3.6
-    version: 0.3.9
+    version: 0.3.9(patch_hash=ksi57dpz6iyskpt22swwiiuafy)
   '@libsql/client':
     specifier: 0.4.0-pre.5
     version: 0.4.0-pre.5
@@ -141,13 +146,14 @@ packages:
       preact-render-to-string: 5.2.3(preact@10.11.3)
     dev: false
 
-  /@auth/drizzle-adapter@0.3.9:
+  /@auth/drizzle-adapter@0.3.9(patch_hash=ksi57dpz6iyskpt22swwiiuafy):
     resolution: {integrity: sha512-xDHYofXyxIvqkLqsrxnnRWpNLJVpvPw+2qlFuZxkMYs83+geYHQqMg0GBrB/pAoNx1+1hG1DjGQvCeSr52FPKg==}
     dependencies:
       '@auth/core': 0.18.4
     transitivePeerDependencies:
       - nodemailer
     dev: false
+    patched: true
 
   /@babel/runtime@7.23.5:
     resolution: {integrity: sha512-NdUTHcPe4C99WxPub+K9l9tK5/lV4UXIoaHSYgzco9BCyjKAAwzdBI+wWtYqHt7LJdbo74ZjRPJgzVweq1sz0w==}

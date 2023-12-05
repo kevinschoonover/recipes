@@ -8,7 +8,8 @@ import DiscordProvider from "next-auth/providers/discord";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
-import { sqliteTable } from "~/server/db/schema";
+import { sqliteTable, accounts, users } from "~/server/db/schema";
+import { and, eq } from "drizzle-orm";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -46,7 +47,24 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   },
-  adapter: DrizzleAdapter(db, sqliteTable),
+  adapter: {
+    ...DrizzleAdapter(db, sqliteTable),
+    async getUserByAccount(providerAccount: { provider: string; providerAccountId: string; }) {
+      const results = await db
+        .select()
+        .from(accounts)
+        .leftJoin(users, eq(users.id, accounts.userId))
+        .where(
+          and(
+            eq(accounts.provider, providerAccount.provider),
+            eq(accounts.providerAccountId, providerAccount.providerAccountId)
+          )
+        )
+        .get();
+
+      return results?.user ?? null;
+    },
+  },
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,

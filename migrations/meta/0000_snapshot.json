@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "ae39e8e9-1638-4799-b509-83f741d7c5ce",
+  "id": "cf0cfa22-2b53-4cb7-820f-a7416c0d7cac",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "recipes_account": {
@@ -9,28 +9,28 @@
       "columns": {
         "userId": {
           "name": "userId",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "type": {
           "name": "type",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "provider": {
           "name": "provider",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "providerAccountId": {
           "name": "providerAccountId",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -58,14 +58,14 @@
         },
         "token_type": {
           "name": "token_type",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "scope": {
           "name": "scope",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -79,22 +79,28 @@
         },
         "session_state": {
           "name": "session_state",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         }
       },
-      "indexes": {
-        "userId_idx": {
-          "name": "userId_idx",
-          "columns": [
+      "indexes": {},
+      "foreignKeys": {
+        "recipes_account_userId_recipes_user_id_fk": {
+          "name": "recipes_account_userId_recipes_user_id_fk",
+          "tableFrom": "recipes_account",
+          "tableTo": "recipes_user",
+          "columnsFrom": [
             "userId"
           ],
-          "isUnique": false
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
-      "foreignKeys": {},
       "compositePrimaryKeys": {
         "recipes_account_provider_providerAccountId_pk": {
           "columns": [
@@ -161,7 +167,21 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "recipes_post_createdById_recipes_user_id_fk": {
+          "name": "recipes_post_createdById_recipes_user_id_fk",
+          "tableFrom": "recipes_post",
+          "tableTo": "recipes_user",
+          "columnsFrom": [
+            "createdById"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -170,14 +190,14 @@
       "columns": {
         "sessionToken": {
           "name": "sessionToken",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
         "userId": {
           "name": "userId",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -190,16 +210,22 @@
           "autoincrement": false
         }
       },
-      "indexes": {
-        "userId_idx": {
-          "name": "userId_idx",
-          "columns": [
+      "indexes": {},
+      "foreignKeys": {
+        "recipes_session_userId_recipes_user_id_fk": {
+          "name": "recipes_session_userId_recipes_user_id_fk",
+          "tableFrom": "recipes_session",
+          "tableTo": "recipes_user",
+          "columnsFrom": [
             "userId"
           ],
-          "isUnique": false
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -208,21 +234,21 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
         "name": {
           "name": "name",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "email": {
           "name": "email",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -232,12 +258,11 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "autoincrement": false
         },
         "image": {
           "name": "image",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -253,14 +278,14 @@
       "columns": {
         "identifier": {
           "name": "identifier",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "token": {
           "name": "token",
-          "type": "text(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
