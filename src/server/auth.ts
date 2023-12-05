@@ -47,6 +47,8 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   },
+  // https://github.com/nextauthjs/next-auth/issues/8335
+  // https://github.com/nextauthjs/next-auth/issues/8377
   adapter: {
     ...DrizzleAdapter(db, sqliteTable),
     async getUserByAccount(providerAccount: { provider: string; providerAccountId: string; }) {
