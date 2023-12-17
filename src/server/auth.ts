@@ -47,26 +47,7 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   },
-  // https://github.com/nextauthjs/next-auth/issues/8335
-  // https://github.com/nextauthjs/next-auth/issues/8377
-  adapter: {
-    ...DrizzleAdapter(db, sqliteTable),
-    async getUserByAccount(providerAccount: { provider: string; providerAccountId: string; }) {
-      const results = await db
-        .select()
-        .from(accounts)
-        .leftJoin(users, eq(users.id, accounts.userId))
-        .where(
-          and(
-            eq(accounts.provider, providerAccount.provider),
-            eq(accounts.providerAccountId, providerAccount.providerAccountId)
-          )
-        )
-        .get();
-
-      return results?.user ?? null;
-    },
-  },
+  adapter: DrizzleAdapter(db, sqliteTable),
   providers: [
     DiscordProvider({
       clientId: env.DISCORD_CLIENT_ID,
