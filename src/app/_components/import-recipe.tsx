@@ -5,14 +5,14 @@ import { useState } from "react";
 
 import { api } from "~/trpc/react";
 
-export function CreatePost() {
+export function ImportRecipe() {
   const router = useRouter();
-  const [name, setName] = useState("");
+  const [url, setURL] = useState("");
 
-  const createPost = api.post.create.useMutation({
+  const importRecipe = api.recipe.import.useMutation({
     onSuccess: () => {
       router.refresh();
-      setName("");
+      setURL("");
     },
   });
 
@@ -20,23 +20,23 @@ export function CreatePost() {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        createPost.mutate({ name });
+        importRecipe.mutate({ url });
       }}
       className="flex flex-col gap-2"
     >
       <input
         type="text"
-        placeholder="Title"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        placeholder="URL"
+        value={url}
+        onChange={(e) => setURL(e.target.value)}
         className="w-full rounded-full px-4 py-2 text-black"
       />
       <button
         type="submit"
         className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
-        disabled={createPost.isLoading}
+        disabled={importRecipe.isLoading}
       >
-        {createPost.isLoading ? "Submitting..." : "Submit"}
+        {importRecipe.isLoading ? "Submitting..." : "Submit"}
       </button>
     </form>
   );

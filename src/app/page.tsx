@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { CreatePost } from "~/app/_components/create-post";
+import { ImportRecipe } from "~/app/_components/import-recipe";
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
 
@@ -56,7 +56,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <CrudShowcase />
+        <ImportRecipe />
       </div>
     </main>
   );
@@ -75,8 +75,6 @@ async function CrudShowcase() {
       ) : (
         <p>You have no posts yet.</p>
       )}
-
-      <CreatePost />
     </div>
   );
 }
