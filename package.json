@@ -24,6 +24,7 @@
     "@trpc/server": "^10.44.1",
     "better-sqlite3": "^9.2.2",
     "drizzle-orm": "^0.29.1",
+    "nanoid": "^5.0.4",
     "next": "^14.0.4",
     "next-auth": "^4.24.5",
     "node-html-parser": "^6.1.11",

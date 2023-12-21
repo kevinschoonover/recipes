@@ -14,13 +14,12 @@ CREATE TABLE `recipes_account` (
 	FOREIGN KEY (`userId`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `recipes_post` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`name` text(256),
-	`createdById` text(255) NOT NULL,
-	`created_at` integer DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	`updatedAt` integer,
-	FOREIGN KEY (`createdById`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
+CREATE TABLE `recipes_recipes` (
+	`id` text PRIMARY KEY NOT NULL,
+	`url` text NOT NULL,
+	`document` text NOT NULL,
+	`userId` text NOT NULL,
+	FOREIGN KEY (`userId`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `recipes_session` (
@@ -44,6 +43,3 @@ CREATE TABLE `recipes_verificationToken` (
 	`expires` integer NOT NULL,
 	PRIMARY KEY(`identifier`, `token`)
 );
---> statement-breakpoint
-CREATE INDEX `createdById_idx` ON `recipes_post` (`createdById`);--> statement-breakpoint
-CREATE INDEX `name_idx` ON `recipes_post` (`name`);
