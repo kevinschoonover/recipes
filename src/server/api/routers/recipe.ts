@@ -49,10 +49,10 @@ export const recipeRouter = createTRPCRouter({
             .values({
               url: input.url,
               document: JSON.stringify(recipe),
-              id: nanoid(),
+              slug: nanoid(),
               userId: userID,
             })
-            .returning({ id: recipesTable.id }),
+            .returning({ slug: recipesTable.slug }),
         );
         if (insertOperations.length != 1) {
           return;
@@ -73,7 +73,7 @@ export const recipeRouter = createTRPCRouter({
       where: eq(recipesTable.userId, userID),
     });
     return userRecipes.map((recipe) => {
-      return { document: JSON.parse(recipe.document) as Recipe, url: recipe.url, id: recipe.id }
+      return { document: JSON.parse(recipe.document) as Recipe, url: recipe.url, slug: recipe.slug }
     });
   }),
 });
