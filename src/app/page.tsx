@@ -6,6 +6,15 @@ import RecipesGrid from "~/app/_components/RecipesGrid";
 import RecipePanel from "~/app/_components/RecipePanel";
 import { StrictMode } from "react";
 
+async function importRecipe(url: string) {
+  const session = await getServerAuthSession();
+
+  if (!session?.user)
+    throw new Error("user is not authenticated. cannot import recipes");
+
+  await api.recipe.import.mutate;
+}
+
 async function getRecipes() {
   const session = await getServerAuthSession();
 

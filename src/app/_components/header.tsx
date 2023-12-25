@@ -1,10 +1,12 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useContext } from "react";
 import { Menu, Popover, Transition } from "@headlessui/react";
 import { Bars3Icon, BellIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { type Session } from "next-auth";
+
+import { SelectedRecipeContext } from "~/app/_providers/SelectedRecipeProvider";
 
 const user = {
   name: "Tom Cook",
@@ -12,7 +14,6 @@ const user = {
   imageUrl:
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
 };
-const navigation = [{ name: "Recipes", href: "#", current: true }];
 const userNavigation = [
   { name: "Your Profile", href: "#" },
   { name: "Settings", href: "#" },
@@ -28,6 +29,17 @@ interface HeaderProps {
 }
 
 export default function Header({ session }: HeaderProps) {
+  const { setSelectedRecipe } = useContext(SelectedRecipeContext);
+
+  const navigation = [
+    {
+      name: "Recipes",
+      href: "#",
+      onClick: () => setSelectedRecipe(undefined),
+      current: true,
+    },
+  ];
+
   return (
     <Popover as="header" className="bg-indigo-600 pb-24">
       {({ open }) => (
@@ -133,6 +145,7 @@ export default function Header({ session }: HeaderProps) {
                       <a
                         key={item.name}
                         href={item.href}
+                        onClick={() => item.onClick()}
                         className={classNames(
                           item.current ? "text-white" : "text-indigo-100",
                           "rounded-md bg-white bg-opacity-0 px-3 py-2 text-sm font-medium hover:bg-opacity-10",
@@ -218,6 +231,7 @@ export default function Header({ session }: HeaderProps) {
                       <div className="mt-3 space-y-1 px-2">
                         {navigation.map((nav) => (
                           <a
+                            key={nav.name}
                             href={nav.href}
                             className="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-100 hover:text-gray-800"
                           >

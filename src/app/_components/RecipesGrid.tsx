@@ -11,6 +11,8 @@ export default function RecipesGrid({ recipes }: { recipes: ParsedRecipe[] }) {
     SelectedRecipeContext,
   );
 
+  console.log(recipes);
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-1">
       {recipes.map((recipe) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 import { Disclosure } from "@headlessui/react";
 import {
@@ -11,6 +11,7 @@ import {
 import { type NutritionInformation, type HowToStep } from "schema-dts";
 
 import { SelectedRecipeContext } from "~/app/_providers/SelectedRecipeProvider";
+import { api } from "~/trpc/react";
 import NutritionLabel from "./NutritionLabel";
 
 function classNames(...classes: string[]) {
@@ -18,7 +19,17 @@ function classNames(...classes: string[]) {
 }
 
 export default function RecipePanel() {
+  const [url, setURL] = useState("");
   const { selectedRecipe } = useContext(SelectedRecipeContext);
+  const utils = api.useUtils();
+  const importRecipe = api.recipe.import.useMutation({
+    onSuccess: () => {
+      setURL("");
+      utils.recipe.getRecipes.invalidate().catch((e) => {
+        console.error(`error invalidating getRecipes: ${e}`);
+      });
+    },
+  });
 
   let recipeBody = (
     <div className="p-6">
@@ -45,14 +56,31 @@ export default function RecipePanel() {
         <p className="mt-1 text-sm text-gray-500">
           Get started by selecting a recipe or import one.
         </p>
-        <div className="mt-6">
-          <button
-            type="button"
-            className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
-            Import Recipe
-          </button>
+        <div className="mt-6 flex items-center justify-center">
+          <div className="min-w-24 col-span-4 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
+            <input
+              type="text"
+              name="url"
+              id="url"
+              autoComplete="url"
+              className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+              onChange={(e) => setURL(e.target.value)}
+            />
+          </div>
+          <div>
+            <button
+              type="button"
+              className="ml-4 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={url === "" || importRecipe.isLoading}
+              onClick={(e) => {
+                e.preventDefault();
+                importRecipe.mutate({ url });
+              }}
+            >
+              <PlusIcon className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
+              {importRecipe.isLoading ? "Importing..." : "Import Recipe"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -107,14 +135,14 @@ export default function RecipePanel() {
       },
       {
         name: "Nutrition Facts",
-        body: (
+        body: selectedRecipe.document.nutrition ? (
           <NutritionLabel
-            recipeYield="4"
+            recipeYield="TODO"
             nutritionFacts={
               selectedRecipe.document.nutrition as NutritionInformation
             }
           />
-        ),
+        ) : undefined,
       },
     ];
 

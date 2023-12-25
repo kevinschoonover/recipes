@@ -12,10 +12,17 @@ import {
 import { recipesTable } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 
-const LDJsonDocument = z.object({
-  "@context": z.string(),
-  "@graph": z.array(z.object({ "@type": z.string() }).passthrough()),
-});
+const Thing = z
+  .object({
+    "@context": z.string(),
+    "@graph": z
+      .array(z.object({ "@type": z.string() }).passthrough())
+      .optional(),
+    "@type": z.string().optional(),
+  })
+  .passthrough();
+
+const LDJsonDocument = Thing.or(z.array(Thing));
 
 export const recipeRouter = createTRPCRouter({
   import: protectedProcedure
@@ -31,17 +38,44 @@ export const recipeRouter = createTRPCRouter({
         const recipes = parse(body)
           .querySelectorAll("script[type=application/ld+json]")
           .reduce<Recipe[]>((acc, elm) => {
+            // try {
             const document: z.infer<typeof LDJsonDocument> =
               LDJsonDocument.parse(JSON.parse(elm.rawText));
 
-            document["@graph"].forEach((obj) => {
-              if (obj["@type"] === "Recipe") {
-                acc.push(obj as Recipe);
+            if (Array.isArray(document)) {
+              document.forEach((obj) => {
+                if (obj["@type"] === "Recipe") {
+                  acc.push(obj as Recipe);
+                }
+              });
+            } else {
+              if (document["@graph"] !== undefined) {
+                document["@graph"].forEach((obj) => {
+                  if (obj["@type"] === "Recipe") {
+                    acc.push(obj as Recipe);
+                  }
+                });
+              } else if (document["@type"] === "Recipe") {
+                acc.push(document as Recipe);
               }
-            });
+            }
 
             return acc;
+            // } catch (e) {
+            //   if (e instanceof Error) {
+            //     console.log(
+            //       `failed to import recipe from ${input.url}. document: ${elm.rawText}, err: ${e.message}`,
+            //     );
+            //   }
+            //   return acc;
+            // }
           }, [] as Recipe[]);
+
+        if (recipes.length != 1) {
+          throw new Error(
+            `unexpected number of recipes found. expected: 1, found: ${recipes.length}`,
+          );
+        }
 
         const insertOperations = recipes.map((recipe) =>
           ctx.db
