@@ -43,3 +43,5 @@ yarn-error.log*
 
 .direnv
 result
+
+out.json

@@ -1,67 +1,102 @@
-import { ImportRecipe } from "~/app/_components/import-recipe";
 import Header from "~/app/_components/header";
-
+import SelectedRecipeProvider from "~/app/_providers/SelectedRecipeProvider";
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
-import Link from "next/link";
+import RecipesGrid from "~/app/_components/RecipesGrid";
+import RecipePanel from "~/app/_components/RecipePanel";
+import { StrictMode } from "react";
 
-async function RecipesGrid() {
+async function getRecipes() {
   const session = await getServerAuthSession();
-  if (!session?.user) return null;
 
-  const recipes = (await api.recipe.getRecipes.query()).map((recipe) => {
-    let image = recipe.document.image?.valueOf()
-    if (typeof image === "string") {
-      image = recipe.document.image?.toString()
-    } else if (image instanceof Object) {
+  if (!session?.user)
+    throw new Error("user is not authenticated. cannot get recipes");
+
+  return (await api.recipe.getRecipes.query()).map((recipe) => {
+    let imageURL = "https://picsum.photos/100/100";
+    let category: string | undefined = undefined;
+    const image = recipe.document.thumbnailUrl?.valueOf();
+    if (image instanceof Object) {
       // TODO: better checking of type
-      image = (image as string[])![0]!
-    } else {
-      image = "https://picsum.photos/500/300"
+      imageURL = (image as string[])![0]!;
+    } else if (typeof image === "string") {
+      imageURL = image;
+    }
+    const documentCategory = recipe.document.recipeCategory?.valueOf();
+    if (typeof documentCategory === "string") {
+      category = documentCategory;
+    } else if (
+      documentCategory instanceof Object &&
+      Array.isArray(documentCategory)
+    ) {
+      category = documentCategory[0] as string;
     }
 
     const name = recipe.document.name?.toString() ?? "unknown";
 
     return {
       slug: recipe.slug,
-      image: image,
-      name: name
-    }
-  })
-
-  return (
-    <ul role="list" className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 xl:gap-x-8">
-      {recipes.map((recipe) => (
-        <li key={recipe.slug} className="relative">
-          <div className="group aspect-h-7 aspect-w-10 block w-full overflow-hidden rounded-lg bg-gray-100 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 focus-within:ring-offset-gray-100">
-            <img src={recipe.image} alt="" className="pointer-events-none object-cover group-hover:opacity-75" />
-            <Link href={`/recipe/${recipe.slug}`} className="absolute inset-0 focus:outline-none">
-              <span className="sr-only">View details for {recipe.name}</span>
-            </Link>
-          </div>
-          <p className="pointer-events-none mt-2 block truncate text-sm font-medium text-white">{recipe.name}</p>
-          <p className="pointer-events-none block text-sm font-medium text-gray-400">test</p>
-        </li>
-      ))}
-    </ul>
-  );
+      image: imageURL,
+      name: name,
+      category: category,
+      document: recipe.document,
+    };
+  });
 }
 
-export default async function Home() {
+export default async function Page() {
   const session = await getServerAuthSession();
 
   return (
-    <>
-      <Header session={session} />
-      <main className="flex flex-col items-center justify-center">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-[5rem]">
-            Your <span className="text-[hsl(280,100%,70%)]">Recipes</span>, {session?.user.name ?? "Loser"}
-          </h1>
-          <RecipesGrid />
-          <ImportRecipe />
+    <StrictMode>
+      <SelectedRecipeProvider>
+        <div className="min-h-full">
+          <Header session={session} />
+          <main className="-mt-24 pb-8">
+            <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+              <h1 className="sr-only">Page title</h1>
+              {/* Main 3 column grid */}
+              <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3 lg:gap-8">
+                {/* Left column */}
+                <div className="grid grid-cols-1 gap-4 lg:col-span-2">
+                  <section aria-labelledby="section-1-title">
+                    <h2 className="sr-only" id="section-1-title">
+                      Your Recipes
+                    </h2>
+                    <div className="overflow-hidden rounded-lg bg-white shadow">
+                      <RecipePanel />
+                    </div>
+                  </section>
+                </div>
+
+                {/* Right column */}
+                <div className="grid grid-cols-1 gap-4">
+                  <section aria-labelledby="section-2-title">
+                    <h2 className="sr-only" id="section-2-title">
+                      Recipe Selection Panel
+                    </h2>
+                    <div className="overflow-hidden rounded-lg bg-white shadow">
+                      <div className="p-6">
+                        <RecipesGrid recipes={await getRecipes()} />
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </main>
+          <footer>
+            <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+              <div className="border-t border-gray-200 py-8 text-center text-sm text-gray-500 sm:text-left">
+                <span className="block sm:inline">
+                  &copy; 2021 Your Company, Inc.
+                </span>{" "}
+                <span className="block sm:inline">All rights reserved.</span>
+              </div>
+            </div>
+          </footer>
         </div>
-      </main>
-    </>
+      </SelectedRecipeProvider>
+    </StrictMode>
   );
 }

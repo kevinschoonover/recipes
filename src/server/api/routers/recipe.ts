@@ -73,7 +73,11 @@ export const recipeRouter = createTRPCRouter({
       where: eq(recipesTable.userId, userID),
     });
     return userRecipes.map((recipe) => {
-      return { document: JSON.parse(recipe.document) as Recipe, url: recipe.url, slug: recipe.slug }
+      return {
+        document: JSON.parse(recipe.document) as Recipe,
+        url: recipe.url,
+        slug: recipe.slug,
+      };
     });
   }),
 });
