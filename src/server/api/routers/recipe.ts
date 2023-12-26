@@ -10,7 +10,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { recipesTable } from "~/server/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 const Thing = z
   .object({
@@ -77,31 +77,51 @@ export const recipeRouter = createTRPCRouter({
           );
         }
 
-        const insertOperations = recipes.map((recipe) =>
-          ctx.db
-            .insert(recipesTable)
-            .values({
-              url: input.url,
-              document: JSON.stringify(recipe),
-              slug: nanoid(),
-              userId: userID,
-            })
-            .returning({ slug: recipesTable.slug }),
-        );
-        if (insertOperations.length != 1) {
-          return;
-        }
-        await insertOperations[0];
+        const recipe = recipes[0]!;
+        const recipeObj = {
+          url: input.url,
+          document: JSON.stringify(recipe),
+          slug: nanoid(),
+        };
+        await ctx.db
+          .insert(recipesTable)
+          .values({
+            ...recipeObj,
+            userId: userID,
+          })
+          .returning({ slug: recipesTable.slug });
+        return {
+          url: input.url,
+          document: recipe,
+          slug: recipeObj.slug,
+        };
       } catch (e) {
         if (e instanceof Error) {
-          console.log(
+          console.error(
             `failed to import recipe from ${input.url}. err: ${e.message}`,
           );
         }
-        return;
+        throw e;
       }
     }),
-  getRecipes: protectedProcedure.query(async ({ ctx }) => {
+  delete: protectedProcedure
+    .input(z.object({ slug: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userID = ctx.session.user.id;
+      const result = await ctx.db
+        .delete(recipesTable)
+        .where(
+          and(
+            eq(recipesTable.slug, input.slug),
+            eq(recipesTable.userId, userID),
+          ),
+        );
+      if (result.rowsAffected != 1) {
+        return false;
+      }
+      return true;
+    }),
+  all: protectedProcedure.query(async ({ ctx }) => {
     const userID = ctx.session.user.id;
     const userRecipes = await ctx.db.query.recipesTable.findMany({
       where: eq(recipesTable.userId, userID),
