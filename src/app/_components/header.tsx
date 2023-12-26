@@ -9,7 +9,6 @@ import { signOut } from "next-auth/react";
 
 import { SelectedRecipeContext } from "~/app/_providers/SelectedRecipeProvider";
 import { SearchContext } from "../_providers/SearchProvider";
-import Image from "next/image";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -44,7 +43,7 @@ export default function Header({ session }: HeaderProps) {
               <div className="absolute left-0 flex-shrink-0 lg:static">
                 <a href="#">
                   <span className="sr-only">Your Company</span>
-                  <Image
+                  <img
                     className="h-8 w-auto"
                     src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=300"
                     alt="Your Company"
@@ -60,7 +59,7 @@ export default function Header({ session }: HeaderProps) {
                       <Menu.Button className="relative flex rounded-full bg-white text-sm ring-2 ring-white ring-opacity-20 focus:outline-none focus:ring-opacity-100">
                         <span className="absolute -inset-1.5" />
                         <span className="sr-only">Open user menu</span>
-                        <Image
+                        <img
                           className="h-8 w-8 rounded-full"
                           src={session?.user.image ?? ""}
                           alt=""
@@ -214,7 +213,7 @@ export default function Header({ session }: HeaderProps) {
                     <div className="pb-2 pt-3">
                       <div className="flex items-center justify-between px-4">
                         <div>
-                          <Image
+                          <img
                             className="h-8 w-auto"
                             src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
                             alt="Your Company"
@@ -248,7 +247,7 @@ export default function Header({ session }: HeaderProps) {
                     >
                       <div className="flex items-center px-5">
                         <div className="flex-shrink-0">
-                          <Image
+                          <img
                             className="h-10 w-10 rounded-full"
                             src={session?.user.image ?? ""}
                             alt=""

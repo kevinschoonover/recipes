@@ -80,7 +80,7 @@ export default function RecipesGrid({ session }: RecipesGridProps) {
             )}
           >
             <div className="flex-shrink-0">
-              <Image
+              <img
                 className="h-10 w-10 rounded-full"
                 src={recipe.image}
                 alt=""
