@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useState, Fragment, useRef } from "react";
+import { useContext, useState, Fragment, useRef, useEffect } from "react";
 
 import { Disclosure, Dialog, Transition } from "@headlessui/react";
 import {
@@ -12,11 +12,13 @@ import {
   type NutritionInformation,
   type HowToStep,
   type HowToSection,
+  type Recipe,
 } from "schema-dts";
 
 import {
   SelectedRecipeContext,
   ParseRecipe,
+  type ParsedRecipe,
 } from "~/app/_providers/SelectedRecipeProvider";
 import { api } from "~/trpc/react";
 import NutritionLabel from "./NutritionLabel";
@@ -53,7 +55,7 @@ function renderRecipeInstructions(
     return (
       <ol>
         {currentSection.map((instruction) => (
-          <li key={instruction.name?.toString()}>
+          <li key={(instruction.name ?? instruction.text)?.toString()}>
             {instruction.text?.toString()}
           </li>
         ))}
@@ -72,11 +74,14 @@ function renderRecipeInstructions(
       }
 
       return (
-        <section aria-label={section.name?.toString()}>
+        <section
+          key={`section-${section.name?.toString()}`}
+          aria-label={section.name?.toString()}
+        >
           <h4>{section.name?.toString()}</h4>
-          <ol>
-            {parsedItems.map((instruction) => (
-              <li key={instruction.name?.toString()}>
+          <ol key={`ol-${section.name?.toString()}`}>
+            {parsedItems.map((instruction, index) => (
+              <li key={`li-${index}-${instruction.name?.toString()}`}>
                 {instruction.text?.toString()}
               </li>
             ))}
@@ -91,14 +96,28 @@ function renderRecipeInstructions(
 
 export default function RecipePanel({ session }: RecipePanelProps) {
   const [url, setURL] = useState("");
+  const [editable, setEditable] = useState(false);
   const [open, setOpen] = useState(false);
   const [showDocument, setShowDocument] = useState(false);
-
-  const cancelButtonRef = useRef(null);
-
   const { selectedRecipe, setSelectedRecipe } = useContext(
     SelectedRecipeContext,
   );
+  const [editedDocument, setEditedDocument] = useState<
+    ParsedRecipe | undefined
+  >(undefined);
+  const [readonlyDocument, setReadonlyDocument] = useState<
+    ParsedRecipe | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (selectedRecipe) {
+      setEditedDocument(selectedRecipe);
+      setReadonlyDocument(selectedRecipe);
+    }
+  }, [selectedRecipe]);
+
+  const cancelButtonRef = useRef(null);
+
   const utils = api.useUtils();
 
   const importRecipe = api.recipe.import.useMutation({
@@ -315,8 +334,12 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                 <button
                   type="button"
                   className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                  onClick={() => {
+                    setEditable(!editable);
+                    setEditedDocument(selectedRecipe);
+                  }}
                 >
-                  Edit
+                  {editable ? "Cancel" : "Edit"}
                 </button>
                 <div className="flex border-l border-gray-300 pl-4">
                   <button
@@ -355,11 +378,26 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                     <h3 className="sr-only">Description</h3>
                     <div
                       className="space-y-6 text-base text-gray-700"
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          selectedRecipe.document.description?.toString() ?? "",
+                      contentEditable={editable}
+                      suppressContentEditableWarning={true}
+                      onInput={(e) => {
+                        const localDocument = JSON.parse(
+                          JSON.stringify(editedDocument!),
+                        ) as ParsedRecipe;
+                        localDocument.document.description =
+                          e.currentTarget.textContent ?? "";
+                        console.log(e.currentTarget.textContent);
+                        setEditedDocument(localDocument);
+                        console.log(
+                          selectedRecipe.document.description?.toString(),
+                        );
                       }}
-                    />
+                    >
+                      {(editable
+                        ? readonlyDocument
+                        : selectedRecipe
+                      )?.document.description?.toString()}
+                    </div>
                   </div>
                   <section aria-labelledby="details-heading" className="mt-12">
                     <h2 id="details-heading" className="sr-only">
