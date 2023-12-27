@@ -12,17 +12,21 @@ import {
   type NutritionInformation,
   type HowToStep,
   type HowToSection,
-  type Recipe,
 } from "schema-dts";
+import { type Session } from "next-auth";
 
+import { api } from "~/trpc/react";
 import {
   SelectedRecipeContext,
   ParseRecipe,
   type ParsedRecipe,
 } from "~/app/_providers/SelectedRecipeProvider";
-import { api } from "~/trpc/react";
-import NutritionLabel from "./NutritionLabel";
-import { type Session } from "next-auth";
+import {
+  EditableLi,
+  EditableDiv,
+  EditableHeader,
+} from "~/app/_components/Editable";
+import NutritionLabel from "~/app/_components/NutritionLabel";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -33,10 +37,13 @@ interface RecipePanelProps {
 }
 
 function renderRecipeInstructions(
-  recipeInstructions: object | string,
+  doc: ParsedRecipe | undefined,
+  setDoc: (arg: ParsedRecipe) => void,
+  contentEditable: "plaintext-only" | false,
 ): React.ReactNode {
   const sections: HowToSection[] = [];
   const currentSection: HowToStep[] = [];
+  const recipeInstructions = doc?.document.recipeInstructions?.valueOf();
   if (
     recipeInstructions instanceof Object &&
     Array.isArray(recipeInstructions)
@@ -54,15 +61,26 @@ function renderRecipeInstructions(
   if (currentSection.length > 0) {
     return (
       <ol>
-        {currentSection.map((instruction) => (
-          <li key={(instruction.name ?? instruction.text)?.toString()}>
-            {instruction.text?.toString()}
-          </li>
+        {currentSection.map((instruction, instructionIndex) => (
+          <EditableLi
+            value={instruction.text?.toString() ?? ""}
+            contentEditable={contentEditable}
+            onChange={(text) => {
+              const localDocument = JSON.parse(
+                JSON.stringify(doc),
+              ) as ParsedRecipe;
+              (localDocument.document.recipeInstructions as HowToStep[])[
+                instructionIndex
+              ]!.text = text;
+              setDoc(localDocument);
+            }}
+            keyName={`ingredient-${instructionIndex}`}
+          />
         ))}
       </ol>
     );
   } else if (sections.length > 0) {
-    return sections.map((section) => {
+    return sections.map((section, sectionIndex) => {
       const parsedItems: HowToStep[] = [];
       const items = section.itemListElement?.valueOf();
       if (Array.isArray(items)) {
@@ -75,23 +93,46 @@ function renderRecipeInstructions(
 
       return (
         <section
-          key={`section-${section.name?.toString()}`}
+          key={`section-${sectionIndex}`}
           aria-label={section.name?.toString()}
         >
-          <h4>{section.name?.toString()}</h4>
+          <EditableHeader
+            value={section.name?.toString() ?? "Example Header"}
+            contentEditable={contentEditable}
+            onChange={(text) => {
+              const localDocument = JSON.parse(
+                JSON.stringify(doc),
+              ) as ParsedRecipe;
+              (localDocument.document.recipeInstructions as HowToSection[])[
+                sectionIndex
+              ]!.name = text;
+              setDoc(localDocument);
+            }}
+          />
           <ol key={`ol-${section.name?.toString()}`}>
-            {parsedItems.map((instruction, index) => (
-              <li key={`li-${index}-${instruction.name?.toString()}`}>
-                {instruction.text?.toString()}
-              </li>
+            {parsedItems.map((instruction, instructionIndex) => (
+              <EditableLi
+                value={instruction.text?.toString() ?? ""}
+                contentEditable={contentEditable}
+                onChange={(text) => {
+                  const localDocument = JSON.parse(
+                    JSON.stringify(doc),
+                  ) as ParsedRecipe;
+                  ((
+                    localDocument.document.recipeInstructions as HowToSection[]
+                  )[sectionIndex]!.itemListElement as HowToStep[])![
+                    instructionIndex
+                  ]!.text = text;
+                  setDoc(localDocument);
+                }}
+                keyName={`ingredient-${instructionIndex}`}
+              />
             ))}
           </ol>
         </section>
       );
     });
   }
-
-  return <p>recipeInstructions</p>;
 }
 
 export default function RecipePanel({ session }: RecipePanelProps) {
@@ -105,14 +146,10 @@ export default function RecipePanel({ session }: RecipePanelProps) {
   const [editedDocument, setEditedDocument] = useState<
     ParsedRecipe | undefined
   >(undefined);
-  const [readonlyDocument, setReadonlyDocument] = useState<
-    ParsedRecipe | undefined
-  >(undefined);
 
   useEffect(() => {
     if (selectedRecipe) {
       setEditedDocument(selectedRecipe);
-      setReadonlyDocument(selectedRecipe);
     }
   }, [selectedRecipe]);
 
@@ -197,10 +234,10 @@ export default function RecipePanel({ session }: RecipePanelProps) {
   );
 
   if (selectedRecipe) {
-    const instructions = selectedRecipe.document.recipeInstructions?.valueOf();
-
     const parsedIngredients: string[] = [];
-    const ingredients = selectedRecipe.document.recipeIngredient?.valueOf();
+    const doc = editable ? editedDocument : selectedRecipe ?? {};
+    const instructions = doc?.document.recipeInstructions?.valueOf() ?? [];
+    const ingredients = doc?.document.recipeIngredient?.valueOf() ?? [];
     if (ingredients instanceof Object && Array.isArray(ingredients)) {
       ingredients.forEach((ingredient) => {
         if (typeof ingredient == "string") {
@@ -215,8 +252,21 @@ export default function RecipePanel({ session }: RecipePanelProps) {
         body:
           parsedIngredients.length > 0 ? (
             <ul>
-              {parsedIngredients.map((ingredient) => (
-                <li key={ingredient}>{ingredient}</li>
+              {parsedIngredients.map((ingredient, index) => (
+                <EditableLi
+                  value={ingredient}
+                  contentEditable={editable ? "plaintext-only" : false}
+                  onChange={(text) => {
+                    const localDocument = JSON.parse(
+                      JSON.stringify(editedDocument!),
+                    ) as ParsedRecipe;
+                    (localDocument.document.recipeIngredient as string[])[
+                      index
+                    ] = text;
+                    setEditedDocument(localDocument);
+                  }}
+                  keyName={`ingredient-${index}`}
+                />
               ))}
             </ul>
           ) : undefined,
@@ -224,7 +274,13 @@ export default function RecipePanel({ session }: RecipePanelProps) {
       {
         name: "Instructions",
         defaultOpen: true,
-        body: instructions ? renderRecipeInstructions(instructions) : undefined,
+        body: instructions
+          ? renderRecipeInstructions(
+              doc,
+              setEditedDocument,
+              editable ? "plaintext-only" : false,
+            )
+          : undefined,
       },
       {
         name: "Nutrition Facts",
@@ -370,34 +426,38 @@ export default function RecipePanel({ session }: RecipePanelProps) {
               </div>
               {showDocument ? (
                 <pre className="mt-4">
-                  {JSON.stringify(selectedRecipe.document, undefined, 2)}
+                  {JSON.stringify(
+                    (editable ? editedDocument : selectedRecipe)?.document ??
+                      {},
+                    undefined,
+                    2,
+                  )}
                 </pre>
               ) : (
                 <>
                   <div className="mt-6">
                     <h3 className="sr-only">Description</h3>
-                    <div
+                    <EditableDiv
+                      value={
+                        (editable
+                          ? editedDocument
+                          : selectedRecipe
+                        )?.document.description?.toString() ?? ""
+                      }
                       className="space-y-6 text-base text-gray-700"
-                      contentEditable={editable}
-                      suppressContentEditableWarning={true}
-                      onInput={(e) => {
+                      contentEditable={editable ? "plaintext-only" : false}
+                      onChange={(text) => {
                         const localDocument = JSON.parse(
                           JSON.stringify(editedDocument!),
                         ) as ParsedRecipe;
-                        localDocument.document.description =
-                          e.currentTarget.textContent ?? "";
-                        console.log(e.currentTarget.textContent);
+                        localDocument.document.description = text;
+                        console.log(text);
                         setEditedDocument(localDocument);
                         console.log(
                           selectedRecipe.document.description?.toString(),
                         );
                       }}
-                    >
-                      {(editable
-                        ? readonlyDocument
-                        : selectedRecipe
-                      )?.document.description?.toString()}
-                    </div>
+                    />
                   </div>
                   <section aria-labelledby="details-heading" className="mt-12">
                     <h2 id="details-heading" className="sr-only">
