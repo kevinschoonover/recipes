@@ -99,6 +99,18 @@ function renderRecipeInstructions(
           <EditableHeader
             value={section.name?.toString() ?? "Example Header"}
             contentEditable={contentEditable}
+            onAdd={() => {
+              const localDocument = JSON.parse(
+                JSON.stringify(doc),
+              ) as ParsedRecipe;
+              (
+                localDocument.document.recipeInstructions as HowToSection[]
+              ).splice(sectionIndex, 0, {
+                "@type": "HowToSection",
+              } as HowToSection);
+              console.log(localDocument);
+              setDoc(localDocument);
+            }}
             onChange={(text) => {
               const localDocument = JSON.parse(
                 JSON.stringify(doc),
@@ -276,10 +288,10 @@ export default function RecipePanel({ session }: RecipePanelProps) {
         defaultOpen: true,
         body: instructions
           ? renderRecipeInstructions(
-              doc,
-              setEditedDocument,
-              editable ? "plaintext-only" : false,
-            )
+            doc,
+            setEditedDocument,
+            editable ? "plaintext-only" : false,
+          )
           : undefined,
       },
       {
@@ -428,7 +440,7 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                 <pre className="mt-4">
                   {JSON.stringify(
                     (editable ? editedDocument : selectedRecipe)?.document ??
-                      {},
+                    {},
                     undefined,
                     2,
                   )}

@@ -110,11 +110,13 @@ export function EditableLi({
 export function EditableHeader({
   value,
   onChange,
+  onAdd,
   contentEditable,
   className,
 }: {
   value: string;
   onChange?: (e: string) => void;
+  onAdd?: () => void;
   contentEditable: "plaintext-only" | false;
   className?: string;
 }) {
@@ -128,7 +130,7 @@ export function EditableHeader({
 
   const handleChange = (event: React.ChangeEvent<HTMLHeadingElement>) => {
     if (onChange) {
-      onChange(event.target.innerHTML);
+      onChange(event.target.innerHTML.trim());
     }
   };
 
@@ -136,12 +138,26 @@ export function EditableHeader({
     <h4
       className={classNames(
         className ?? "",
+        "group relative",
         contentEditable ? "hover:bg-slate-50 focus:bg-transparent" : "",
       )}
-      contentEditable={contentEditable}
       suppressContentEditableWarning={true}
       onInput={handleChange}
-      ref={contentEditableRef}
-    />
+    >
+      <div
+        className="pr-5"
+        onInput={handleChange}
+        contentEditable={contentEditable}
+        ref={contentEditableRef}
+      />
+      {contentEditable && (
+        <button
+          onClick={onAdd}
+          className="absolute right-0 top-0 hidden group-hover:inline-block"
+        >
+          <PlusIcon className="h-5" />
+        </button>
+      )}
+    </h4>
   );
 }
