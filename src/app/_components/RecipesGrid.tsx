@@ -9,7 +9,6 @@ import {
 } from "~/app/_providers/SelectedRecipeProvider";
 import { api } from "~/trpc/react";
 import { SearchContext } from "~/app/_providers/SearchProvider";
-import Image from "next/image";
 
 interface RecipesGridProps {
   session: Session | null;

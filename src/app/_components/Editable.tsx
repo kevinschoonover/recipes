@@ -130,7 +130,7 @@ export function EditableHeader({
 
   const handleChange = (event: React.ChangeEvent<HTMLHeadingElement>) => {
     if (onChange) {
-      onChange(event.target.innerHTML.trim());
+      onChange(event.target.innerHTML);
     }
   };
 
@@ -159,5 +159,44 @@ export function EditableHeader({
         </button>
       )}
     </h4>
+  );
+}
+
+export function EditableTitle({
+  value,
+  onChange,
+  contentEditable,
+  className,
+}: {
+  value: string;
+  onChange?: (e: string) => void;
+  contentEditable: "plaintext-only" | false;
+  className?: string;
+}) {
+  const contentEditableRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (contentEditableRef.current!.textContent !== value) {
+      contentEditableRef.current!.textContent = value;
+    }
+  });
+
+  const handleChange = (event: React.ChangeEvent<HTMLHeadingElement>) => {
+    if (onChange) {
+      onChange(event.target.innerHTML);
+    }
+  };
+
+  return (
+    <h1
+      className={classNames(
+        className ?? "",
+        contentEditable ? "hover:bg-slate-50 focus:bg-transparent" : "",
+      )}
+      suppressContentEditableWarning={true}
+      onInput={handleChange}
+      contentEditable={contentEditable}
+      ref={contentEditableRef}
+    />
   );
 }

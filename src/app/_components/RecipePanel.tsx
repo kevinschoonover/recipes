@@ -25,6 +25,7 @@ import {
   EditableLi,
   EditableDiv,
   EditableHeader,
+  EditableTitle,
 } from "~/app/_components/Editable";
 import NutritionLabel from "~/app/_components/NutritionLabel";
 
@@ -57,29 +58,7 @@ function renderRecipeInstructions(
       }
     });
   }
-
-  if (currentSection.length > 0) {
-    return (
-      <ol>
-        {currentSection.map((instruction, instructionIndex) => (
-          <EditableLi
-            value={instruction.text?.toString() ?? ""}
-            contentEditable={contentEditable}
-            onChange={(text) => {
-              const localDocument = JSON.parse(
-                JSON.stringify(doc),
-              ) as ParsedRecipe;
-              (localDocument.document.recipeInstructions as HowToStep[])[
-                instructionIndex
-              ]!.text = text;
-              setDoc(localDocument);
-            }}
-            keyName={`ingredient-${instructionIndex}`}
-          />
-        ))}
-      </ol>
-    );
-  } else if (sections.length > 0) {
+  if (sections.length > 0) {
     return sections.map((section, sectionIndex) => {
       const parsedItems: HowToStep[] = [];
       const items = section.itemListElement?.valueOf();
@@ -89,6 +68,13 @@ function renderRecipeInstructions(
             parsedItems.push(item as HowToStep);
           }
         });
+      }
+
+      if (parsedItems.length < 1 && contentEditable) {
+        parsedItems.push({
+          "@id": "HowToStep",
+          text: "Example Step",
+        } as HowToStep);
       }
 
       return (
@@ -108,7 +94,6 @@ function renderRecipeInstructions(
               ).splice(sectionIndex, 0, {
                 "@type": "HowToSection",
               } as HowToSection);
-              console.log(localDocument);
               setDoc(localDocument);
             }}
             onChange={(text) => {
@@ -137,7 +122,7 @@ function renderRecipeInstructions(
                   ]!.text = text;
                   setDoc(localDocument);
                 }}
-                keyName={`ingredient-${instructionIndex}`}
+                keyName={`instruction-${sectionIndex}-${instructionIndex}`}
               />
             ))}
           </ol>
@@ -145,6 +130,36 @@ function renderRecipeInstructions(
       );
     });
   }
+
+  if (currentSection.length < 1 && contentEditable) {
+    currentSection.push({
+      "@id": "HowToStep",
+      text: "Example Step",
+    } as HowToStep);
+  }
+
+  // by default, return a list with no section header. i dont know if this is the behavior I want to preserve
+  // in the future
+  return (
+    <ol>
+      {currentSection.map((instruction, instructionIndex) => (
+        <EditableLi
+          value={instruction.text?.toString() ?? ""}
+          contentEditable={contentEditable}
+          onChange={(text) => {
+            const localDocument = JSON.parse(
+              JSON.stringify(doc),
+            ) as ParsedRecipe;
+            (localDocument.document.recipeInstructions as HowToStep[])[
+              instructionIndex
+            ]!.text = text;
+            setDoc(localDocument);
+          }}
+          keyName={`instruction-${instructionIndex}`}
+        />
+      ))}
+    </ol>
+  );
 }
 
 export default function RecipePanel({ session }: RecipePanelProps) {
@@ -288,10 +303,10 @@ export default function RecipePanel({ session }: RecipePanelProps) {
         defaultOpen: true,
         body: instructions
           ? renderRecipeInstructions(
-            doc,
-            setEditedDocument,
-            editable ? "plaintext-only" : false,
-          )
+              doc,
+              setEditedDocument,
+              editable ? "plaintext-only" : false,
+            )
           : undefined,
       },
       {
@@ -395,9 +410,22 @@ export default function RecipePanel({ session }: RecipePanelProps) {
           <div className="lg:grid lg:grid-cols-1 lg:items-start lg:gap-x-8">
             {/* Product info */}
             <div className="mt-10 px-4 sm:mt-8 sm:px-0 lg:mt-0">
-              <h1 className="align-center flex items-center text-3xl font-bold tracking-tight text-gray-900">
-                {selectedRecipe.name}
-              </h1>
+              <EditableTitle
+                className="align-center flex items-center text-3xl font-bold tracking-tight text-gray-900"
+                contentEditable={editable ? "plaintext-only" : false}
+                value={
+                  (editable ? editedDocument : selectedRecipe)?.name ??
+                  "unknown"
+                }
+                onChange={(text) => {
+                  const localDocument = JSON.parse(
+                    JSON.stringify(editedDocument!),
+                  ) as ParsedRecipe;
+                  localDocument.document.name = text;
+                  localDocument.name = text;
+                  setEditedDocument(localDocument);
+                }}
+              />
               <div className="mt-1 flex space-x-4">
                 <button
                   type="button"
@@ -440,7 +468,7 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                 <pre className="mt-4">
                   {JSON.stringify(
                     (editable ? editedDocument : selectedRecipe)?.document ??
-                    {},
+                      {},
                     undefined,
                     2,
                   )}
@@ -454,7 +482,8 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                         (editable
                           ? editedDocument
                           : selectedRecipe
-                        )?.document.description?.toString() ?? ""
+                        )?.document.description?.toString() ??
+                        (editable ? "Example Description" : "")
                       }
                       className="space-y-6 text-base text-gray-700"
                       contentEditable={editable ? "plaintext-only" : false}
@@ -463,11 +492,7 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                           JSON.stringify(editedDocument!),
                         ) as ParsedRecipe;
                         localDocument.document.description = text;
-                        console.log(text);
                         setEditedDocument(localDocument);
-                        console.log(
-                          selectedRecipe.document.description?.toString(),
-                        );
                       }}
                     />
                   </div>
