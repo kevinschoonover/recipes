@@ -7,7 +7,7 @@ import { type Recipe } from "schema-dts";
 import {
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
+  // publicProcedure,
 } from "~/server/api/trpc";
 import { recipesTable } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";

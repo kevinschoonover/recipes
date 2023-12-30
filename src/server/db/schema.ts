@@ -1,7 +1,4 @@
-import { sql } from "drizzle-orm";
 import {
-  index,
-  int,
   integer,
   sqliteTableCreator,
   primaryKey,
