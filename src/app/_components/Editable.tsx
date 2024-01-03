@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { PlusIcon } from "@heroicons/react/20/solid";
+import { PlusIcon, TrashIcon } from "@heroicons/react/20/solid";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
@@ -52,6 +52,7 @@ export function EditableLi({
   value,
   onChange,
   onAdd,
+  onDelete,
   contentEditable,
   className,
   keyName,
@@ -59,6 +60,7 @@ export function EditableLi({
   value: string;
   onChange?: (e: string) => void;
   onAdd?: () => void;
+  onDelete?: () => void;
   contentEditable: "plaintext-only" | false;
   className?: string;
   keyName: string;
@@ -89,18 +91,27 @@ export function EditableLi({
         key={keyName}
       >
         <div
-          className="pr-5"
+          className="pr-10"
           onInput={handleChange}
           contentEditable={contentEditable}
           ref={contentEditableRef}
         />
         {contentEditable && (
-          <button
-            onClick={onAdd}
-            className="absolute right-0 top-0 hidden group-hover:inline-block"
-          >
-            <PlusIcon className="h-5" />
-          </button>
+          <>
+            <button
+              onClick={onDelete}
+              className="absolute right-5 top-0 hidden group-hover:inline-block"
+            >
+              <TrashIcon className="h-5" />
+            </button>
+
+            <button
+              onClick={onAdd}
+              className="absolute right-0 top-0 hidden group-hover:inline-block"
+            >
+              <PlusIcon className="h-5" />
+            </button>
+          </>
         )}
       </li>
     </>
@@ -111,12 +122,14 @@ export function EditableHeader({
   value,
   onChange,
   onAdd,
+  onDelete,
   contentEditable,
   className,
 }: {
   value: string;
   onChange?: (e: string) => void;
   onAdd?: () => void;
+  onDelete?: () => void;
   contentEditable: "plaintext-only" | false;
   className?: string;
 }) {
@@ -145,18 +158,26 @@ export function EditableHeader({
       onInput={handleChange}
     >
       <div
-        className="pr-5"
+        className="pr-10"
         onInput={handleChange}
         contentEditable={contentEditable}
         ref={contentEditableRef}
       />
       {contentEditable && (
-        <button
-          onClick={onAdd}
-          className="absolute right-0 top-0 hidden group-hover:inline-block"
-        >
-          <PlusIcon className="h-5" />
-        </button>
+        <>
+          <button
+            onClick={onDelete}
+            className="absolute right-5 top-0 hidden group-hover:inline-block"
+          >
+            <TrashIcon className="h-5" />
+          </button>
+          <button
+            onClick={onAdd}
+            className="absolute right-0 top-0 hidden group-hover:inline-block"
+          >
+            <PlusIcon className="h-5" />
+          </button>
+        </>
       )}
     </h4>
   );

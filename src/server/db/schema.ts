@@ -66,7 +66,7 @@ export const verificationTokens = sqliteTable(
 
 export const recipesTable = sqliteTable("recipes", {
   slug: text("slug").primaryKey(),
-  url: text("url").notNull(),
+  importedFrom: text("importedFrom"),
   document: text("document").notNull(),
   userId: text("userId")
     .notNull()

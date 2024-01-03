@@ -3,12 +3,15 @@
 import { type Session } from "next-auth";
 import { signIn } from "next-auth/react";
 import { useContext, useEffect } from "react";
+import { BeakerIcon } from "@heroicons/react/20/solid";
+
 import {
   SelectedRecipeContext,
   ParseRecipes,
 } from "~/app/_providers/SelectedRecipeProvider";
 import { api } from "~/trpc/react";
 import { SearchContext } from "~/app/_providers/SearchProvider";
+import { nanoid } from "nanoid";
 
 interface RecipesGridProps {
   session: Session | null;
@@ -19,9 +22,13 @@ function classNames(...classes: string[]) {
 }
 
 export default function RecipesGrid({ session }: RecipesGridProps) {
-  const { selectedRecipe, setSelectedRecipe, setRecipes, recipes } = useContext(
-    SelectedRecipeContext,
-  );
+  const {
+    selectedRecipe,
+    setSelectedRecipe,
+    setRecipes,
+    recipes,
+    setEditMode,
+  } = useContext(SelectedRecipeContext);
   const { searchText } = useContext(SearchContext);
 
   const { status, isError, data, error } = api.recipe.all.useQuery(undefined, {
@@ -48,29 +55,52 @@ export default function RecipesGrid({ session }: RecipesGridProps) {
             .includes(searchText.toLowerCase().replace(/\s+/g, "")),
         );
 
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-1">
-      {!session ? (
-        <div className="text-center">
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">
-            Please Authenticate to see Your Recipes
-          </h3>
-          <div className="mt-4 flex items-center justify-center">
-            <div>
-              <button
-                type="button"
-                className="ml-4 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                onClick={() => signIn()}
-              >
-                Sign In
-              </button>
-            </div>
+  let gridBody;
+  if (!session) {
+    gridBody = (
+      <div className="text-center">
+        <h3 className="mt-2 text-sm font-semibold text-gray-900">
+          Please Authenticate to see Your Recipes
+        </h3>
+        <div className="mt-4 flex items-center justify-center">
+          <div>
+            <button
+              type="button"
+              className="ml-4 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              onClick={() => signIn()}
+            >
+              Sign In
+            </button>
           </div>
         </div>
-      ) : searchText !== "" && filteredRecipes.length === 0 ? (
-        <p>no recipes match provided search term</p>
-      ) : (
-        filteredRecipes.map((recipe) => (
+      </div>
+    );
+  } else if (searchText !== "" && filteredRecipes.length === 0) {
+    gridBody = <p>no recipes match provided search term</p>;
+  } else {
+    gridBody = (
+      <>
+        <button
+          type="button"
+          className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-6 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          onClick={() => {
+            setSelectedRecipe({
+              slug: nanoid(),
+              importedFrom: null,
+              image: "https://picsum.photos/200",
+              name: "Test",
+              category: undefined,
+              document: { "@type": "Recipe" },
+            });
+            setEditMode(true);
+          }}
+        >
+          <BeakerIcon className="mx-auto h-6 w-6 text-gray-400" />
+          <span className="mt-2 block text-sm font-semibold text-gray-900">
+            Create a new recipe
+          </span>
+        </button>
+        {filteredRecipes.map((recipe) => (
           <div
             key={recipe.slug}
             className={classNames(
@@ -96,6 +126,7 @@ export default function RecipesGrid({ session }: RecipesGridProps) {
                   } else {
                     setSelectedRecipe(recipe);
                   }
+                  setEditMode(false);
                 }}
               >
                 <span className="absolute inset-0" aria-hidden="true" />
@@ -110,8 +141,12 @@ export default function RecipesGrid({ session }: RecipesGridProps) {
               </a>
             </div>
           </div>
-        ))
-      )}
-    </div>
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-1">{gridBody}</div>
   );
 }

@@ -13,8 +13,8 @@ import { type recipeRouter } from "~/server/api/routers/recipe";
 
 export type ParsedRecipe = {
   slug: string;
-  url: string;
-  image: string;
+  importedFrom: string | null;
+  image: string | undefined;
   name: string;
   category: string | undefined;
   document: Recipe;
@@ -25,7 +25,7 @@ type RecipeRouterOutput = inferRouterOutputs<typeof recipeRouter>;
 export function ParseRecipe(
   recipe: RecipeRouterOutput["all"][number],
 ): ParsedRecipe {
-  let imageURL = "https://picsum.photos/100/100";
+  let imageURL = undefined;
   let category: string | undefined = undefined;
   const image = recipe.document.image?.valueOf();
   if (image instanceof Object) {
@@ -48,7 +48,7 @@ export function ParseRecipe(
 
   return {
     slug: recipe.slug,
-    url: recipe.url,
+    importedFrom: recipe.importedFrom,
     image: imageURL,
     name: name,
     category: category,
@@ -64,6 +64,8 @@ export function ParseRecipes(
 
 interface SelectedRecipeContextType {
   recipes: ParsedRecipe[];
+  editMode: boolean;
+  setEditMode: (arg0: boolean) => void;
   setRecipes: Dispatch<SetStateAction<ParsedRecipe[]>>;
   selectedRecipe: ParsedRecipe | undefined;
   setSelectedRecipe: Dispatch<SetStateAction<ParsedRecipe | undefined>>;
@@ -75,6 +77,10 @@ export const SelectedRecipeContext = createContext<SelectedRecipeContextType>({
   },
   recipes: [],
   selectedRecipe: undefined,
+  editMode: false,
+  setEditMode: () => {
+    return undefined;
+  },
   setSelectedRecipe: () => {
     return undefined;
   },
@@ -89,6 +95,7 @@ export default function RecipeProvider({
     ParsedRecipe | undefined
   >(undefined);
   const [recipes, setRecipes] = useState<ParsedRecipe[]>([]);
+  const [editMode, setEditMode] = useState<boolean>(false);
 
   return (
     <SelectedRecipeContext.Provider
@@ -97,6 +104,8 @@ export default function RecipeProvider({
         setSelectedRecipe,
         recipes,
         setRecipes,
+        editMode,
+        setEditMode,
       }}
     >
       {children}

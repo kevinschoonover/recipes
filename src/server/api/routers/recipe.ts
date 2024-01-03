@@ -16,7 +16,9 @@ const Thing = z
   .object({
     "@context": z.string(),
     "@graph": z
-      .array(z.object({ "@type": z.string() }).passthrough())
+      .array(
+        z.object({ "@type": z.string().or(z.array(z.string())) }).passthrough(),
+      )
       .optional(),
     "@type": z.string().optional(),
   })
@@ -25,6 +27,36 @@ const Thing = z
 const LDJsonDocument = Thing.or(z.array(Thing));
 
 export const recipeRouter = createTRPCRouter({
+  save: protectedProcedure
+    .input(
+      z.object({
+        slug: z.string().optional(),
+        document: z.object({ "@type": z.string() }).passthrough(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userID = ctx.session.user.id;
+      const slug = input.slug ?? nanoid();
+      try {
+        await ctx.db
+          .insert(recipesTable)
+          .values({
+            slug: slug,
+            document: JSON.stringify(input.document),
+            userId: userID,
+          })
+          .returning({ slug: recipesTable.slug });
+        return {
+          document: input.document,
+          slug: slug,
+        };
+      } catch (e) {
+        if (e instanceof Error) {
+          console.error(`failed to create recipe. err: ${e.message}`);
+        }
+        throw e;
+      }
+    }),
   import: protectedProcedure
     .input(z.object({ url: z.string().url() }))
     .mutation(async ({ ctx, input }) => {
@@ -79,7 +111,7 @@ export const recipeRouter = createTRPCRouter({
 
         const recipe = recipes[0]!;
         const recipeObj = {
-          url: input.url,
+          importedFrom: input.url,
           document: JSON.stringify(recipe),
           slug: nanoid(),
         };
@@ -91,7 +123,7 @@ export const recipeRouter = createTRPCRouter({
           })
           .returning({ slug: recipesTable.slug });
         return {
-          url: input.url,
+          importedFrom: input.url,
           document: recipe,
           slug: recipeObj.slug,
         };
@@ -129,7 +161,7 @@ export const recipeRouter = createTRPCRouter({
     return userRecipes.map((recipe) => {
       return {
         document: JSON.parse(recipe.document) as Recipe,
-        url: recipe.url,
+        importedFrom: recipe.importedFrom,
         slug: recipe.slug,
       };
     });

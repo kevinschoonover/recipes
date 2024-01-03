@@ -85,13 +85,22 @@ function renderRecipeInstructions(
           <EditableHeader
             value={section.name?.toString() ?? "Example Header"}
             contentEditable={contentEditable}
+            onDelete={() => {
+              const localDocument = JSON.parse(
+                JSON.stringify(doc),
+              ) as ParsedRecipe;
+              (
+                localDocument.document.recipeInstructions as HowToSection[]
+              ).splice(sectionIndex, 1);
+              setDoc(localDocument);
+            }}
             onAdd={() => {
               const localDocument = JSON.parse(
                 JSON.stringify(doc),
               ) as ParsedRecipe;
               (
                 localDocument.document.recipeInstructions as HowToSection[]
-              ).splice(sectionIndex, 0, {
+              ).splice(sectionIndex + 1, 0, {
                 "@type": "HowToSection",
               } as HowToSection);
               setDoc(localDocument);
@@ -111,6 +120,34 @@ function renderRecipeInstructions(
               <EditableLi
                 value={instruction.text?.toString() ?? ""}
                 contentEditable={contentEditable}
+                onAdd={() => {
+                  const localDocument = JSON.parse(
+                    JSON.stringify(doc),
+                  ) as ParsedRecipe;
+
+                  ((
+                    localDocument.document.recipeInstructions as HowToSection[]
+                  )[sectionIndex]!.itemListElement as HowToStep[])!.splice(
+                    instructionIndex + 1,
+                    0,
+                    {
+                      "@type": "HowToStep",
+                    } as HowToStep,
+                  );
+                  setDoc(localDocument);
+                }}
+                onDelete={() => {
+                  const localDocument = JSON.parse(
+                    JSON.stringify(doc),
+                  ) as ParsedRecipe;
+                  ((
+                    localDocument.document.recipeInstructions as HowToSection[]
+                  )[sectionIndex]!.itemListElement as HowToStep[])!.splice(
+                    instructionIndex,
+                    1,
+                  );
+                  setDoc(localDocument);
+                }}
                 onChange={(text) => {
                   const localDocument = JSON.parse(
                     JSON.stringify(doc),
@@ -133,7 +170,7 @@ function renderRecipeInstructions(
 
   if (currentSection.length < 1 && contentEditable) {
     currentSection.push({
-      "@id": "HowToStep",
+      "@type": "HowToStep",
       text: "Example Step",
     } as HowToStep);
   }
@@ -146,13 +183,43 @@ function renderRecipeInstructions(
         <EditableLi
           value={instruction.text?.toString() ?? ""}
           contentEditable={contentEditable}
+          onAdd={() => {
+            const localDocument = JSON.parse(
+              JSON.stringify(doc),
+            ) as ParsedRecipe;
+            (localDocument.document.recipeInstructions as HowToStep[]).splice(
+              instructionIndex + 1,
+              0,
+              { "@type": "HowToStep" },
+            );
+            setDoc(localDocument);
+          }}
           onChange={(text) => {
             const localDocument = JSON.parse(
               JSON.stringify(doc),
             ) as ParsedRecipe;
-            (localDocument.document.recipeInstructions as HowToStep[])[
-              instructionIndex
-            ]!.text = text;
+            if (!localDocument.document.recipeInstructions) {
+              localDocument.document.recipeInstructions = [];
+            }
+            const currentInstruction = (
+              localDocument.document.recipeInstructions as HowToStep[]
+            )[instructionIndex] ?? { "@type": "HowToStep" };
+            currentInstruction.text = text;
+            (localDocument.document.recipeInstructions as HowToStep[]).splice(
+              instructionIndex,
+              1,
+              currentInstruction,
+            );
+            setDoc(localDocument);
+          }}
+          onDelete={() => {
+            const localDocument = JSON.parse(
+              JSON.stringify(doc),
+            ) as ParsedRecipe;
+            (localDocument.document.recipeInstructions as HowToStep[]).splice(
+              instructionIndex,
+              1,
+            );
             setDoc(localDocument);
           }}
           keyName={`instruction-${instructionIndex}`}
@@ -164,15 +231,13 @@ function renderRecipeInstructions(
 
 export default function RecipePanel({ session }: RecipePanelProps) {
   const [url, setURL] = useState("");
-  const [editable, setEditable] = useState(false);
   const [open, setOpen] = useState(false);
   const [showDocument, setShowDocument] = useState(false);
-  const { selectedRecipe, setSelectedRecipe } = useContext(
-    SelectedRecipeContext,
-  );
+  const { selectedRecipe, setSelectedRecipe, editMode, setEditMode } =
+    useContext(SelectedRecipeContext);
   const [editedDocument, setEditedDocument] = useState<
     ParsedRecipe | undefined
-  >(undefined);
+  >(selectedRecipe);
 
   useEffect(() => {
     if (selectedRecipe) {
@@ -262,9 +327,10 @@ export default function RecipePanel({ session }: RecipePanelProps) {
 
   if (selectedRecipe) {
     const parsedIngredients: string[] = [];
-    const doc = editable ? editedDocument : selectedRecipe ?? {};
+    const doc = editMode ? editedDocument : selectedRecipe ?? {};
     const instructions = doc?.document.recipeInstructions?.valueOf() ?? [];
     const ingredients = doc?.document.recipeIngredient?.valueOf() ?? [];
+    const sourceURL = doc?.document["@id"] ?? doc?.importedFrom;
     if (ingredients instanceof Object && Array.isArray(ingredients)) {
       ingredients.forEach((ingredient) => {
         if (typeof ingredient == "string") {
@@ -273,26 +339,34 @@ export default function RecipePanel({ session }: RecipePanelProps) {
       });
     }
 
+    if (parsedIngredients.length < 1 && editMode) {
+      parsedIngredients.push("Example Ingredient");
+    }
+
     const recipeSections = [
       {
         name: "Ingredients",
+        defaultOpen: editMode,
         body:
           parsedIngredients.length > 0 ? (
             <ul>
-              {parsedIngredients.map((ingredient, index) => (
+              {parsedIngredients.map((ingredient, ingredientIndex) => (
                 <EditableLi
                   value={ingredient}
-                  contentEditable={editable ? "plaintext-only" : false}
+                  contentEditable={editMode ? "plaintext-only" : false}
                   onChange={(text) => {
                     const localDocument = JSON.parse(
-                      JSON.stringify(editedDocument!),
+                      JSON.stringify(editedDocument),
                     ) as ParsedRecipe;
-                    (localDocument.document.recipeIngredient as string[])[
-                      index
-                    ] = text;
+                    if (!localDocument.document.recipeIngredient) {
+                      localDocument.document.recipeIngredient = [];
+                    }
+                    (
+                      localDocument.document.recipeIngredient as string[]
+                    ).splice(ingredientIndex, 1, text);
                     setEditedDocument(localDocument);
                   }}
-                  keyName={`ingredient-${index}`}
+                  keyName={`ingredient-${ingredientIndex}`}
                 />
               ))}
             </ul>
@@ -305,18 +379,17 @@ export default function RecipePanel({ session }: RecipePanelProps) {
           ? renderRecipeInstructions(
               doc,
               setEditedDocument,
-              editable ? "plaintext-only" : false,
+              editMode ? "plaintext-only" : false,
             )
           : undefined,
       },
       {
         name: "Nutrition Facts",
-        body: selectedRecipe.document.nutrition ? (
+        defaultOpen: editMode,
+        body: doc?.document?.nutrition ? (
           <NutritionLabel
             recipeYield="TODO"
-            nutritionFacts={
-              selectedRecipe.document.nutrition as NutritionInformation
-            }
+            nutritionFacts={doc.document.nutrition as NutritionInformation}
           />
         ) : undefined,
       },
@@ -412,14 +485,11 @@ export default function RecipePanel({ session }: RecipePanelProps) {
             <div className="mt-10 px-4 sm:mt-8 sm:px-0 lg:mt-0">
               <EditableTitle
                 className="align-center flex items-center text-3xl font-bold tracking-tight text-gray-900"
-                contentEditable={editable ? "plaintext-only" : false}
-                value={
-                  (editable ? editedDocument : selectedRecipe)?.name ??
-                  "unknown"
-                }
+                contentEditable={editMode ? "plaintext-only" : false}
+                value={doc?.name ?? "unknown"}
                 onChange={(text) => {
                   const localDocument = JSON.parse(
-                    JSON.stringify(editedDocument!),
+                    JSON.stringify(editedDocument),
                   ) as ParsedRecipe;
                   localDocument.document.name = text;
                   localDocument.name = text;
@@ -431,11 +501,11 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                   type="button"
                   className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
                   onClick={() => {
-                    setEditable(!editable);
+                    setEditMode(!editMode);
                     setEditedDocument(selectedRecipe);
                   }}
                 >
-                  {editable ? "Cancel" : "Edit"}
+                  {editMode ? "Cancel" : "Edit"}
                 </button>
                 <div className="flex border-l border-gray-300 pl-4">
                   <button
@@ -446,15 +516,17 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                     Remove
                   </button>
                 </div>
-                <div className="flex border-l border-gray-300 pl-4">
-                  <a
-                    target="_blank"
-                    href={selectedRecipe.document["@id"] ?? selectedRecipe.url}
-                    className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    View Source
-                  </a>
-                </div>
+                {sourceURL && (
+                  <div className="flex border-l border-gray-300 pl-4">
+                    <a
+                      target="_blank"
+                      href={sourceURL}
+                      className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                    >
+                      View Source
+                    </a>
+                  </div>
+                )}
                 <div className="flex border-l border-gray-300 pl-4">
                   <button
                     className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
@@ -466,12 +538,7 @@ export default function RecipePanel({ session }: RecipePanelProps) {
               </div>
               {showDocument ? (
                 <pre className="mt-4">
-                  {JSON.stringify(
-                    (editable ? editedDocument : selectedRecipe)?.document ??
-                      {},
-                    undefined,
-                    2,
-                  )}
+                  {JSON.stringify(doc?.document ?? {}, undefined, 2)}
                 </pre>
               ) : (
                 <>
@@ -479,17 +546,14 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                     <h3 className="sr-only">Description</h3>
                     <EditableDiv
                       value={
-                        (editable
-                          ? editedDocument
-                          : selectedRecipe
-                        )?.document.description?.toString() ??
-                        (editable ? "Example Description" : "")
+                        doc?.document.description?.toString() ??
+                        (editMode ? "Example Description" : "")
                       }
                       className="space-y-6 text-base text-gray-700"
-                      contentEditable={editable ? "plaintext-only" : false}
+                      contentEditable={editMode ? "plaintext-only" : false}
                       onChange={(text) => {
                         const localDocument = JSON.parse(
-                          JSON.stringify(editedDocument!),
+                          JSON.stringify(editedDocument),
                         ) as ParsedRecipe;
                         localDocument.document.description = text;
                         setEditedDocument(localDocument);
