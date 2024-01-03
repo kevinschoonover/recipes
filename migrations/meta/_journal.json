@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1703139882681,
-      "tag": "0000_solid_hardball",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1703327169358,
-      "tag": "0001_easy_earthquake",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1704258596809,
-      "tag": "0002_fixed_emma_frost",
+      "when": 1704259022325,
+      "tag": "0000_fair_pandemic",
       "breakpoints": true
     }
   ]

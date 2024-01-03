@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "e2ba66c5-3ad6-473f-856b-57d1eede50a0",
+  "id": "5f78d414-580f-44cf-be2e-636e329b864f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "recipes_account": {
@@ -115,18 +115,18 @@
     "recipes_recipes": {
       "name": "recipes_recipes",
       "columns": {
-        "id": {
-          "name": "id",
+        "slug": {
+          "name": "slug",
           "type": "text",
           "primaryKey": true,
           "notNull": true,
           "autoincrement": false
         },
-        "url": {
-          "name": "url",
+        "importedFrom": {
+          "name": "importedFrom",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "document": {
@@ -139,13 +139,6 @@
         "userId": {
           "name": "userId",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "expires": {
-          "name": "expires",
-          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

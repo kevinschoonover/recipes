@@ -1,4 +1,4 @@
-CREATE TABLE `recipes_account` (
+CREATE TABLE IF NOT EXISTS `recipes_account` (
 	`userId` text NOT NULL,
 	`type` text NOT NULL,
 	`provider` text NOT NULL,
@@ -14,22 +14,22 @@ CREATE TABLE `recipes_account` (
 	FOREIGN KEY (`userId`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `recipes_recipes` (
-	`id` text PRIMARY KEY NOT NULL,
-	`url` text NOT NULL,
+CREATE TABLE IF NOT EXISTS `recipes_recipes` (
+	`slug` text PRIMARY KEY NOT NULL,
+	`importedFrom` text,
 	`document` text NOT NULL,
 	`userId` text NOT NULL,
 	FOREIGN KEY (`userId`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `recipes_session` (
+CREATE TABLE IF NOT EXISTS `recipes_session` (
 	`sessionToken` text PRIMARY KEY NOT NULL,
 	`userId` text NOT NULL,
 	`expires` integer NOT NULL,
 	FOREIGN KEY (`userId`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `recipes_user` (
+CREATE TABLE IF NOT EXISTS `recipes_user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text,
 	`email` text NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE `recipes_user` (
 	`image` text
 );
 --> statement-breakpoint
-CREATE TABLE `recipes_verificationToken` (
+CREATE TABLE IF NOT EXISTS `recipes_verificationToken` (
 	`identifier` text NOT NULL,
 	`token` text NOT NULL,
 	`expires` integer NOT NULL,
