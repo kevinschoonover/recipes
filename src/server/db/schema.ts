@@ -3,7 +3,9 @@ import {
   sqliteTableCreator,
   primaryKey,
   text,
+  index,
 } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 import { type AdapterAccount } from "next-auth/adapters";
 
 /**
@@ -64,11 +66,23 @@ export const verificationTokens = sqliteTable(
   }),
 );
 
-export const recipesTable = sqliteTable("recipes", {
-  slug: text("slug").primaryKey(),
-  importedFrom: text("importedFrom"),
-  document: text("document").notNull(),
-  userId: text("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-});
+export const recipesTable = sqliteTable(
+  "recipes",
+  {
+    id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    slug: text("slug").notNull(),
+    importedFrom: text("importedFrom"),
+    versionCreatedAt: integer("versionCreatedAt", {
+      mode: "timestamp",
+    }).default(sql`(unixepoch())`),
+    document: text("document").notNull(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => {
+    return {
+      slugIdx: index("slug_idx").on(table.slug),
+    };
+  },
+);

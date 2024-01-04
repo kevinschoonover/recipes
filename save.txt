@@ -1,0 +1,22 @@
+IMPORTEDFROM                                                   
+https://tasty.co/recipe/one-pot-chicken-and-mushroom-pasta         
+https://downshiftology.com/recipes/one-pan-chicken-and-rice/       
+https://www.themediterraneandish.com/chicken-pasta-recipe/         
+https://healthyfitnessmeals.com/baked-teriyaki-salmon/             
+https://www.kimscravings.com/healthy-breakfast-burrito-recipe/
+
+SELECT 
+	x.*,
+	RANK () OVER (
+		PARTITION BY slug
+		ORDER BY versioncreatedat DESC 
+	) version 
+FROM (
+	SELECT 
+		*
+	FROM 
+		recipes_recipes 
+	WHERE 
+		userid='b0f217c2-22d6-45fb-9ed0-7a233acfa816'
+) as x
+WHERE version=1;

@@ -26,12 +26,16 @@ const Thing = z
 
 const LDJsonDocument = Thing.or(z.array(Thing));
 
+const RecipeType: z.ZodType<Recipe> = z
+  .object({ "@type": z.literal("Recipe") })
+  .passthrough();
+
 export const recipeRouter = createTRPCRouter({
   save: protectedProcedure
     .input(
       z.object({
         slug: z.string().optional(),
-        document: z.object({ "@type": z.string() }).passthrough(),
+        document: RecipeType,
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -46,8 +50,10 @@ export const recipeRouter = createTRPCRouter({
             userId: userID,
           })
           .returning({ slug: recipesTable.slug });
+
         return {
           document: input.document,
+          importedFrom: null,
           slug: slug,
         };
       } catch (e) {

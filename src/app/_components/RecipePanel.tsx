@@ -12,6 +12,7 @@ import {
   type NutritionInformation,
   type HowToStep,
   type HowToSection,
+  Recipe,
 } from "schema-dts";
 import { type Session } from "next-auth";
 
@@ -35,6 +36,14 @@ function classNames(...classes: string[]) {
 
 interface RecipePanelProps {
   session: Session | null;
+}
+
+function deepEqual(x, y) {
+  const ok = Object.keys, tx = typeof x, ty = typeof y;
+  return x && y && tx === 'object' && tx === ty ? (
+    ok(x).length === ok(y).length &&
+    ok(x).every(key => deepEqual(x[key], y[key]))
+  ) : (x === y);
 }
 
 function renderRecipeInstructions(
@@ -183,6 +192,7 @@ function renderRecipeInstructions(
         <EditableLi
           value={instruction.text?.toString() ?? ""}
           contentEditable={contentEditable}
+          keyName={`instruction-${instructionIndex}`}
           onAdd={() => {
             const localDocument = JSON.parse(
               JSON.stringify(doc),
@@ -257,6 +267,15 @@ export default function RecipePanel({ session }: RecipePanelProps) {
       await utils.recipe.all.invalidate();
     },
   });
+  const saveRecipe = api.recipe.save.useMutation({
+    onSuccess: async (result) => {
+      setURL("");
+      setOpen(false);
+      setSelectedRecipe(ParseRecipe(result));
+      await utils.recipe.all.invalidate();
+    },
+  });
+
   const deleteRecipe = api.recipe.delete.useMutation({
     onSuccess: async () => {
       setURL("");
@@ -377,10 +396,10 @@ export default function RecipePanel({ session }: RecipePanelProps) {
         defaultOpen: true,
         body: instructions
           ? renderRecipeInstructions(
-              doc,
-              setEditedDocument,
-              editMode ? "plaintext-only" : false,
-            )
+            doc,
+            setEditedDocument,
+            editMode ? "plaintext-only" : false,
+          )
           : undefined,
       },
       {
@@ -397,6 +416,39 @@ export default function RecipePanel({ session }: RecipePanelProps) {
 
     recipeBody = (
       <div className="bg-white">
+        {/* save banner */}
+        {editMode && !deepEqual(selectedRecipe, editedDocument) && (
+          <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 sm:flex sm:justify-center sm:px-6 sm:pb-5 lg:px-8">
+            <div className="pointer-events-auto flex items-center justify-between gap-x-6 bg-gray-900 px-6 py-2.5 sm:rounded-xl sm:py-3 sm:pl-4 sm:pr-3.5">
+              <p className="pr-16 text-sm leading-6 text-white">
+                Careful - you have unsaved changes!
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditMode(!editMode);
+                  setEditedDocument(selectedRecipe);
+                }}
+                className="focus-visible:text-underline -m-1.5 flex-none text-xs text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  saveRecipe.mutate({
+                    slug: editedDocument!.slug,
+                    document: editedDocument!.document,
+                  })
+                }
+                className="-m-1.5 flex-none rounded bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        )}
         {/* delete modal */}
         <Transition.Root show={open} as={Fragment}>
           <Dialog

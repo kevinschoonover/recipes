@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "5f78d414-580f-44cf-be2e-636e329b864f",
+  "id": "565f8aef-defd-4be9-a4de-3bf6dcfd8c24",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "recipes_account": {
@@ -115,10 +115,17 @@
     "recipes_recipes": {
       "name": "recipes_recipes",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
         "slug": {
           "name": "slug",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -128,6 +135,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "versionCreatedAt": {
+          "name": "versionCreatedAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(unixepoch())"
         },
         "document": {
           "name": "document",
@@ -144,7 +159,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "slug_idx": {
+          "name": "slug_idx",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "recipes_recipes_userId_recipes_user_id_fk": {
           "name": "recipes_recipes_userId_recipes_user_id_fk",

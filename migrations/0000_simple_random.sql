@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `recipes_account` (
+CREATE TABLE `recipes_account` (
 	`userId` text NOT NULL,
 	`type` text NOT NULL,
 	`provider` text NOT NULL,
@@ -14,22 +14,24 @@ CREATE TABLE IF NOT EXISTS `recipes_account` (
 	FOREIGN KEY (`userId`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS `recipes_recipes` (
-	`slug` text PRIMARY KEY NOT NULL,
+CREATE TABLE `recipes_recipes` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`slug` text NOT NULL,
 	`importedFrom` text,
+	`versionCreatedAt` integer DEFAULT (unixepoch()),
 	`document` text NOT NULL,
 	`userId` text NOT NULL,
 	FOREIGN KEY (`userId`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS `recipes_session` (
+CREATE TABLE `recipes_session` (
 	`sessionToken` text PRIMARY KEY NOT NULL,
 	`userId` text NOT NULL,
 	`expires` integer NOT NULL,
 	FOREIGN KEY (`userId`) REFERENCES `recipes_user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS `recipes_user` (
+CREATE TABLE `recipes_user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text,
 	`email` text NOT NULL,
@@ -37,9 +39,11 @@ CREATE TABLE IF NOT EXISTS `recipes_user` (
 	`image` text
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS `recipes_verificationToken` (
+CREATE TABLE `recipes_verificationToken` (
 	`identifier` text NOT NULL,
 	`token` text NOT NULL,
 	`expires` integer NOT NULL,
 	PRIMARY KEY(`identifier`, `token`)
 );
+--> statement-breakpoint
+CREATE INDEX `slug_idx` ON `recipes_recipes` (`slug`);
