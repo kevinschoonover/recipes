@@ -39,11 +39,13 @@ interface RecipePanelProps {
 }
 
 function deepEqual(x, y) {
-  const ok = Object.keys, tx = typeof x, ty = typeof y;
-  return x && y && tx === 'object' && tx === ty ? (
-    ok(x).length === ok(y).length &&
-    ok(x).every(key => deepEqual(x[key], y[key]))
-  ) : (x === y);
+  const ok = Object.keys,
+    tx = typeof x,
+    ty = typeof y;
+  return x && y && tx === "object" && tx === ty
+    ? ok(x).length === ok(y).length &&
+        ok(x).every((key) => deepEqual(x[key], y[key]))
+    : x === y;
 }
 
 function renderRecipeInstructions(
@@ -134,38 +136,38 @@ function renderRecipeInstructions(
                     JSON.stringify(doc),
                   ) as ParsedRecipe;
 
-                  ((
-                    localDocument.document.recipeInstructions as HowToSection[]
-                  )[sectionIndex]!.itemListElement as HowToStep[])!.splice(
-                    instructionIndex + 1,
-                    0,
-                    {
-                      "@type": "HowToStep",
-                    } as HowToStep,
-                  );
+                  (
+                    (
+                      localDocument.document
+                        .recipeInstructions as HowToSection[]
+                    )[sectionIndex]!.itemListElement as HowToStep[]
+                  ).splice(instructionIndex + 1, 0, {
+                    "@type": "HowToStep",
+                  } as HowToStep);
                   setDoc(localDocument);
                 }}
                 onDelete={() => {
                   const localDocument = JSON.parse(
                     JSON.stringify(doc),
                   ) as ParsedRecipe;
-                  ((
-                    localDocument.document.recipeInstructions as HowToSection[]
-                  )[sectionIndex]!.itemListElement as HowToStep[])!.splice(
-                    instructionIndex,
-                    1,
-                  );
+                  (
+                    (
+                      localDocument.document
+                        .recipeInstructions as HowToSection[]
+                    )[sectionIndex]!.itemListElement as HowToStep[]
+                  ).splice(instructionIndex, 1);
                   setDoc(localDocument);
                 }}
                 onChange={(text) => {
                   const localDocument = JSON.parse(
                     JSON.stringify(doc),
                   ) as ParsedRecipe;
-                  ((
-                    localDocument.document.recipeInstructions as HowToSection[]
-                  )[sectionIndex]!.itemListElement as HowToStep[])![
-                    instructionIndex
-                  ]!.text = text;
+                  (
+                    (
+                      localDocument.document
+                        .recipeInstructions as HowToSection[]
+                    )[sectionIndex]!.itemListElement as HowToStep[]
+                  )[instructionIndex]!.text = text;
                   setDoc(localDocument);
                 }}
                 keyName={`instruction-${sectionIndex}-${instructionIndex}`}
@@ -197,11 +199,9 @@ function renderRecipeInstructions(
             const localDocument = JSON.parse(
               JSON.stringify(doc),
             ) as ParsedRecipe;
-            (localDocument.document.recipeInstructions as HowToStep[]).splice(
-              instructionIndex + 1,
-              0,
-              { "@type": "HowToStep" },
-            );
+            (
+              (localDocument.document.recipeInstructions as HowToStep[]) ?? []
+            ).splice(instructionIndex + 1, 0, { "@type": "HowToStep" });
             setDoc(localDocument);
           }}
           onChange={(text) => {
@@ -311,7 +311,7 @@ export default function RecipePanel({ session }: RecipePanelProps) {
         </p>
         {session && (
           <div className="mt-6 flex items-center justify-center">
-            <div className="min-w-24 col-span-4 flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
+            <div className="col-span-4 flex min-w-24 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
               <input
                 type="text"
                 name="url"
@@ -373,6 +373,16 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                 <EditableLi
                   value={ingredient}
                   contentEditable={editMode ? "plaintext-only" : false}
+                  onAdd={() => {
+                    const localDocument = JSON.parse(
+                      JSON.stringify(editedDocument),
+                    ) as ParsedRecipe;
+                    (
+                      (localDocument.document.recipeIngredient as string[]) ??
+                      []
+                    ).splice(ingredientIndex + 1, 0, "");
+                    setEditedDocument(localDocument);
+                  }}
                   onChange={(text) => {
                     const localDocument = JSON.parse(
                       JSON.stringify(editedDocument),
@@ -380,9 +390,18 @@ export default function RecipePanel({ session }: RecipePanelProps) {
                     if (!localDocument.document.recipeIngredient) {
                       localDocument.document.recipeIngredient = [];
                     }
+                    (localDocument.document.recipeIngredient as string[])[
+                      ingredientIndex
+                    ] = text;
+                    setEditedDocument(localDocument);
+                  }}
+                  onDelete={() => {
+                    const localDocument = JSON.parse(
+                      JSON.stringify(editedDocument),
+                    ) as ParsedRecipe;
                     (
                       localDocument.document.recipeIngredient as string[]
-                    ).splice(ingredientIndex, 1, text);
+                    ).splice(ingredientIndex, 1);
                     setEditedDocument(localDocument);
                   }}
                   keyName={`ingredient-${ingredientIndex}`}
@@ -396,10 +415,10 @@ export default function RecipePanel({ session }: RecipePanelProps) {
         defaultOpen: true,
         body: instructions
           ? renderRecipeInstructions(
-            doc,
-            setEditedDocument,
-            editMode ? "plaintext-only" : false,
-          )
+              doc,
+              setEditedDocument,
+              editMode ? "plaintext-only" : false,
+            )
           : undefined,
       },
       {

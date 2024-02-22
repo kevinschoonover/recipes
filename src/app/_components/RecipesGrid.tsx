@@ -88,7 +88,7 @@ export default function RecipesGrid({ session }: RecipesGridProps) {
               slug: nanoid(),
               importedFrom: null,
               image: "https://picsum.photos/200",
-              name: "Test",
+              name: "Example Recipe",
               category: undefined,
               document: { "@type": "Recipe" },
             });
