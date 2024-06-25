@@ -1,11 +1,14 @@
 import { type NutritionInformation } from "schema-dts";
+import { EditableDiv } from "./Editable";
 
 export default function NutritionLabel({
   recipeYield,
   nutritionFacts,
+  editMode,
 }: {
   recipeYield: string;
   nutritionFacts: NutritionInformation;
+  editMode: boolean;
 }) {
   //www.fda.gov/food/food-labeling-nutrition/changes-nutrition-facts-label
   return (
@@ -16,6 +19,19 @@ export default function NutritionLabel({
       <div className="leading-snug">{recipeYield}</div>
       <div className="flex justify-between border-b-8 border-black font-bold">
         <div>Serving size</div>
+        <EditableDiv
+          value={nutritionFacts.servingSize?.toString() ?? "0"}
+          className="space-y-6 text-base text-gray-700"
+          contentEditable={editMode ? "plaintext-only" : false}
+          onChange={(text) => {
+            console.log(text);
+            // const localDocument = JSON.parse(
+            //   JSON.stringify(editedDocument),
+            // ) as ParsedRecipe;
+            // localDocument.document.description = text;
+            // setEditedDocument(localDocument);
+          }}
+        />
         <div>{nutritionFacts.servingSize?.toString()}</div>
       </div>
       <div className="flex items-end justify-between font-extrabold">

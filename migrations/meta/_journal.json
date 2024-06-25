@@ -1,12 +1,19 @@
 {
-  "version": "5",
+  "version": "7",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1704349385550,
-      "tag": "0000_simple_random",
+      "version": "6",
+      "when": 1719283822547,
+      "tag": "0000_cheerful_mojo",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1719284755952,
+      "tag": "0001_unknown_iron_man",
       "breakpoints": true
     }
   ]
