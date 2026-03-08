@@ -17,6 +17,9 @@
 		},
 	],
 	"vars": {
-		"R2_PUBLIC_URL": "https://recipe-images.kschoon.me"
+		"R2_PUBLIC_URL": "https://recipe-images.kschoon.me",
+		"BETTER_AUTH_URL": "https://recipes.kschoon.me",
+		"TURSO_DB_URL": "libsql://recipes-kevinschoonover.turso.io",
+		"DISCORD_CLIENT_ID": "1181426281242447932"
 	}
 }
