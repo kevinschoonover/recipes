@@ -1,0 +1,69 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  /* Primary — herb green */
+  --color-primary-1: #2d8a4e;
+  --color-primary-2: #3da563;
+  --color-primary-3: #7bc89a;
+  --color-primary-4: #e8f5ee;
+
+  /* Accent — warm gold/turmeric */
+  --color-accent-1: #d4a039;
+  --color-accent-2: #fdf3dc;
+
+  /* Secondary — text grays */
+  --color-secondary-1: #2d3748;
+  --color-secondary-2: #718096;
+  --color-secondary-3: #a0aec0;
+
+  /* Utility */
+  --color-border-1: #e2e8f0;
+  --color-error-1: #dc3545;
+  --color-error-2: #fff2f0;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f7fafc;
+
+  /* Pill buttons */
+  --radius-primary: 260px;
+
+  /* Rise-in animation for page transitions */
+  --animate-rise-in: rise-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Framework mount point — must stretch to fill viewport */
+html,
+body {
+  height: 100%;
+}
+
+#app {
+  min-height: 100%;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Dark mode overrides ────────────────────────────────────────────────── */
+html.dark {
+  --color-primary-4: #1a3a28;
+  --color-accent-2: #3d3224;
+  --color-secondary-1: #e2e8f0;
+  --color-secondary-2: #a0aec0;
+  --color-secondary-3: #718096;
+  --color-border-1: #2d3748;
+  --color-error-2: #3d1c1c;
+  --color-surface-1: #1a202c;
+  --color-surface-2: #2d3748;
+}
