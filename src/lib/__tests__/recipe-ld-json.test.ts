@@ -20,7 +20,8 @@ const JSONLD_COM_EXAMPLE = {
     name: "John Smith",
   },
   datePublished: "2018-03-10",
-  description: "This classic banana bread recipe comes from my mom -- the walnuts add a nice texture and flavor to the banana bread.",
+  description:
+    "This classic banana bread recipe comes from my mom -- the walnuts add a nice texture and flavor to the banana bread.",
   image: "https://example.com/bananabread.jpg",
   recipeYield: "1 loaf",
   prepTime: "PT15M",
@@ -233,10 +234,7 @@ describe("Schema.org Recipe LD+JSON", () => {
         prepTime: "PT15M",
         cookTime: "PT30M",
         totalTime: "PT45M",
-        ingredients: [
-          { rawText: "2 cups flour" },
-          { rawText: "1 cup sugar" },
-        ],
+        ingredients: [{ rawText: "2 cups flour" }, { rawText: "1 cup sugar" }],
         steps: [
           { text: "Mix dry ingredients" },
           { text: "Bake at 350F for 30 minutes", sectionName: "Baking" },
@@ -254,10 +252,12 @@ describe("Schema.org Recipe LD+JSON", () => {
       expect(ingredients).toHaveLength(2);
       expect(ingredients[0]).toBe("2 cups flour");
 
-      const instructions = result.recipeInstructions as Array<Record<string, string>>;
+      const instructions = result.recipeInstructions as Array<
+        Record<string, string>
+      >;
       expect(instructions).toHaveLength(2);
-      expect(instructions[0]!["@type"]).toBe("HowToStep");
-      expect(instructions[1]!.name).toBe("Baking");
+      expect(instructions[0]["@type"]).toBe("HowToStep");
+      expect(instructions[1].name).toBe("Baking");
     });
 
     it("omits empty fields", () => {

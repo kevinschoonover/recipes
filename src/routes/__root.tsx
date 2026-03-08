@@ -58,22 +58,22 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <PostHogProvider>
           <TanStackQueryProvider>
             <ToastProvider>
-            {children}
-            <TanStackDevtools
-              config={{ position: "bottom-right" }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                TanStackQueryDevtools,
-                {
-                  name: "TanStack AI",
-                  render: <AiDevtoolsPanel />,
-                },
-              ]}
-            />
-          </ToastProvider>
+              {children}
+              <TanStackDevtools
+                config={{ position: "bottom-right" }}
+                plugins={[
+                  {
+                    name: "Tanstack Router",
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                  TanStackQueryDevtools,
+                  {
+                    name: "TanStack AI",
+                    render: <AiDevtoolsPanel />,
+                  },
+                ]}
+              />
+            </ToastProvider>
           </TanStackQueryProvider>
         </PostHogProvider>
         <Scripts />

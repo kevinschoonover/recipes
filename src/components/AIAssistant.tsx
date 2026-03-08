@@ -52,14 +52,16 @@ function Messages({ messages }: { messages: ChatMessages }) {
                 </div>
               );
             }
-            if (
-              part.type === "tool-call" &&
-              part.name === "showRecipe" &&
-              part.output
-            ) {
+            if (part.type === "tool-call") {
+              const output = part.output as { slug?: string } | undefined;
+              const args = JSON.parse(part.arguments || "{}") as {
+                slug?: string;
+              };
+              const slug = output?.slug ?? args.slug;
+              if (!slug) return null;
               return (
                 <div key={part.id} className="mx-auto max-w-sm py-2">
-                  <RecipeCard slug={String(part.output?.slug)} compact />
+                  <RecipeCard slug={slug} compact />
                 </div>
               );
             }
@@ -79,10 +81,8 @@ export default function AIAssistant() {
   if (!isOpen) {
     return (
       <button
-        onClick={() =>
-          appStore.setState((s) => ({ ...s, chatOpen: true }))
-        }
-        className="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary-1 text-white shadow-lg transition-transform active:scale-95 lg:bottom-4"
+        onClick={() => appStore.setState((s) => ({ ...s, chatOpen: true }))}
+        className="fixed bottom-36 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary-1 text-white shadow-lg transition-transform active:scale-95 lg:bottom-6"
       >
         <MessageCircle size={24} />
       </button>
@@ -100,9 +100,7 @@ export default function AIAssistant() {
           <h3 className="font-semibold text-secondary-1">Recipe Assistant</h3>
         </div>
         <button
-          onClick={() =>
-            appStore.setState((s) => ({ ...s, chatOpen: false }))
-          }
+          onClick={() => appStore.setState((s) => ({ ...s, chatOpen: false }))}
           className="flex h-9 w-9 items-center justify-center rounded-xl text-secondary-2 transition-colors active:bg-primary-4"
         >
           <X size={20} />
@@ -134,8 +132,7 @@ export default function AIAssistant() {
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = "auto";
-                target.style.height =
-                  Math.min(target.scrollHeight, 120) + "px";
+                target.style.height = Math.min(target.scrollHeight, 120) + "px";
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey && input.trim()) {

@@ -25,7 +25,11 @@ function isStapleIngredient(
     // Exact match
     if (lower === staple) return true;
     // Ingredient starts with staple name followed by non-alpha (e.g., "salt, to taste" matches "salt")
-    if (lower.startsWith(staple) && (lower.length === staple.length || /[^a-z]/.test(lower[staple.length]!))) return true;
+    if (
+      lower.startsWith(staple) &&
+      (lower.length === staple.length || /[^a-z]/.test(lower[staple.length]))
+    )
+      return true;
     // Staple is a multi-word name contained in the ingredient (e.g., "olive oil, for drizzling" matches "olive oil")
     if (staple.includes(" ") && lower.includes(staple)) return true;
     return false;
@@ -92,7 +96,7 @@ export const addShoppingListItem = createServerFn({ method: "POST" })
       })
       .returning();
 
-    return item!;
+    return item;
   });
 
 export const toggleShoppingListItem = createServerFn({ method: "POST" })
@@ -112,9 +116,7 @@ export const removeShoppingListItem = createServerFn({ method: "POST" })
   .inputValidator((input: { id: number }) => input)
   .handler(async ({ data }) => {
     await getAuthenticatedUser();
-    await db
-      .delete(shoppingListItems)
-      .where(eq(shoppingListItems.id, data.id));
+    await db.delete(shoppingListItems).where(eq(shoppingListItems.id, data.id));
     return { success: true };
   });
 
@@ -138,7 +140,7 @@ export const createShoppingList = createServerFn({ method: "POST" })
       .values({ userId: user.id, name: data.name })
       .returning();
 
-    return list!;
+    return list;
   });
 
 export const deleteShoppingList = createServerFn({ method: "POST" })
@@ -148,10 +150,7 @@ export const deleteShoppingList = createServerFn({ method: "POST" })
     await db
       .delete(shoppingLists)
       .where(
-        and(
-          eq(shoppingLists.id, data.id),
-          eq(shoppingLists.userId, user.id),
-        ),
+        and(eq(shoppingLists.id, data.id), eq(shoppingLists.userId, user.id)),
       );
     return { success: true };
   });
@@ -174,7 +173,7 @@ export const addRecipeToShoppingList = createServerFn({ method: "POST" })
         .insert(shoppingLists)
         .values({ userId: user.id, name: data.newListName })
         .returning();
-      listId = list!.id;
+      listId = list.id;
     }
     if (!listId) throw new Error("Must specify list or new list name");
 
@@ -193,11 +192,10 @@ export const addRecipeToShoppingList = createServerFn({ method: "POST" })
 
     const items = ingredients
       .filter(
-        (ing) =>
-          !isStapleIngredient(ing.name ?? ing.rawText, stapleNamesList),
+        (ing) => !isStapleIngredient(ing.name ?? ing.rawText, stapleNamesList),
       )
       .map((ing) => ({
-        shoppingListId: listId!,
+        shoppingListId: listId,
         recipeId: data.recipeId,
         recipeIngredientId: ing.id,
         name: ing.name ?? ing.rawText,
@@ -214,9 +212,7 @@ export const addRecipeToShoppingList = createServerFn({ method: "POST" })
   });
 
 export const generateFromRecipes = createServerFn({ method: "POST" })
-  .inputValidator(
-    (input: { recipeIds: number[]; listName: string }) => input,
-  )
+  .inputValidator((input: { recipeIds: number[]; listName: string }) => input)
   .handler(async ({ data }) => {
     const user = await getAuthenticatedUser();
 
@@ -248,11 +244,10 @@ export const generateFromRecipes = createServerFn({ method: "POST" })
     // Add non-staple ingredients
     const itemsToInsert = ingredients
       .filter(
-        (ing) =>
-          !isStapleIngredient(ing.name ?? ing.rawText, stapleNamesList),
+        (ing) => !isStapleIngredient(ing.name ?? ing.rawText, stapleNamesList),
       )
       .map((ing) => ({
-        shoppingListId: list!.id,
+        shoppingListId: list.id,
         recipeId: ing.recipeId,
         name: ing.name ?? ing.rawText,
         quantity: ing.quantity,
@@ -264,7 +259,7 @@ export const generateFromRecipes = createServerFn({ method: "POST" })
       await db.insert(shoppingListItems).values(itemsToInsert);
     }
 
-    return list!;
+    return list;
   });
 
 export const updateShoppingItemCategory = createServerFn({ method: "POST" })

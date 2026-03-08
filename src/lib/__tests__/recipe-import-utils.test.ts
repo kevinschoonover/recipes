@@ -159,9 +159,9 @@ describe("ldJsonToRecipeImport", () => {
     expect(result.totalTime).toBe("PT1H15M");
     expect(result.imageUrl).toBe("https://example.com/bread.jpg");
     expect(result.ingredients).toHaveLength(3);
-    expect(result.ingredients[0]!.rawText).toBe("3 bananas");
+    expect(result.ingredients[0].rawText).toBe("3 bananas");
     expect(result.steps).toHaveLength(2);
-    expect(result.steps[0]!.text).toBe("Preheat oven to 350°F.");
+    expect(result.steps[0].text).toBe("Preheat oven to 350°F.");
 
     expect(result.document["@context"]).toBe("https://schema.org");
     expect(result.document["@type"]).toBe("Recipe");
@@ -188,7 +188,7 @@ describe("ldJsonToRecipeImport", () => {
     const result = ldJsonToRecipeImport(ldJson);
 
     expect(result.imageUrl).toBe("https://example.com/1x1.jpg");
-    expect(result.steps[0]!.sectionName).toBe("Preheat");
+    expect(result.steps[0].sectionName).toBe("Preheat");
     expect(result.document.image).toEqual(["https://example.com/1x1.jpg"]);
   });
 
@@ -209,9 +209,7 @@ describe("ldJsonToRecipeImport", () => {
         {
           "@type": "HowToSection",
           name: "Bake",
-          itemListElement: [
-            { "@type": "HowToStep", text: "Mix and pour." },
-          ],
+          itemListElement: [{ "@type": "HowToStep", text: "Mix and pour." }],
         },
       ],
     };
@@ -219,10 +217,10 @@ describe("ldJsonToRecipeImport", () => {
     const result = ldJsonToRecipeImport(ldJson);
 
     expect(result.steps).toHaveLength(3);
-    expect(result.steps[0]!.sectionName).toBe("Prep");
-    expect(result.steps[0]!.text).toBe("Gather ingredients.");
-    expect(result.steps[1]!.sectionName).toBe("Prep");
-    expect(result.steps[2]!.sectionName).toBe("Bake");
+    expect(result.steps[0].sectionName).toBe("Prep");
+    expect(result.steps[0].text).toBe("Gather ingredients.");
+    expect(result.steps[1].sectionName).toBe("Prep");
+    expect(result.steps[2].sectionName).toBe("Bake");
   });
 
   it("handles string instructions", () => {
@@ -236,8 +234,8 @@ describe("ldJsonToRecipeImport", () => {
     const result = ldJsonToRecipeImport(ldJson);
 
     expect(result.steps).toHaveLength(2);
-    expect(result.steps[0]!.text).toBe("Step one.");
-    expect(result.steps[1]!.text).toBe("Step two.");
+    expect(result.steps[0].text).toBe("Step one.");
+    expect(result.steps[1].text).toBe("Step two.");
   });
 
   it("handles ImageObject", () => {
@@ -521,7 +519,10 @@ describe("ldJsonToRecipeImport", () => {
           "@type": "HowToSection",
           name: "Marinate the Chicken",
           itemListElement: [
-            { "@type": "HowToStep", text: "Add marinade ingredients to a bowl." },
+            {
+              "@type": "HowToStep",
+              text: "Add marinade ingredients to a bowl.",
+            },
             { "@type": "HowToStep", text: "Marinate chicken in fridge." },
           ],
         },
@@ -565,10 +566,10 @@ describe("ldJsonToRecipeImport", () => {
     expect(result.ingredients).toHaveLength(20);
     // 2 marinate steps + 11 cook steps = 13 total (flattened from HowToSections)
     expect(result.steps).toHaveLength(13);
-    expect(result.steps[0]!.sectionName).toBe("Marinate the Chicken");
-    expect(result.steps[1]!.sectionName).toBe("Marinate the Chicken");
-    expect(result.steps[2]!.sectionName).toBe("Cook the Chicken and Rice");
-    expect(result.steps[12]!.sectionName).toBe("Cook the Chicken and Rice");
+    expect(result.steps[0].sectionName).toBe("Marinate the Chicken");
+    expect(result.steps[1].sectionName).toBe("Marinate the Chicken");
+    expect(result.steps[2].sectionName).toBe("Cook the Chicken and Rice");
+    expect(result.steps[12].sectionName).toBe("Cook the Chicken and Rice");
     expect(result.totalTime).toBe("PT110M");
     expect(result.document.nutrition?.calories).toBe("423 kcal");
   });
@@ -581,7 +582,8 @@ describe("ldJsonToRecipeImport", () => {
         { "@type": "Person", name: "Jeanine Donofrio", "@id": "some-id" },
         { "@type": "Person", name: "Phoebe Moore", "@id": "other-id" },
       ],
-      description: "Shakshuka is a classic North African and Middle Eastern breakfast dish.",
+      description:
+        "Shakshuka is a classic North African and Middle Eastern breakfast dish.",
       image: [
         "https://cdn.loveandlemons.com/wp-content/uploads/2026/01/shakshuka-500x500.jpg",
         "https://cdn.loveandlemons.com/wp-content/uploads/2026/01/shakshuka.jpg",
@@ -607,9 +609,15 @@ describe("ldJsonToRecipeImport", () => {
         "Pita, for serving",
       ],
       recipeInstructions: [
-        { "@type": "HowToStep", text: "Heat olive oil and cook onion and peppers." },
+        {
+          "@type": "HowToStep",
+          text: "Heat olive oil and cook onion and peppers.",
+        },
         { "@type": "HowToStep", text: "Add tomatoes and simmer 15 minutes." },
-        { "@type": "HowToStep", text: "Make wells and crack eggs. Cook until set." },
+        {
+          "@type": "HowToStep",
+          text: "Make wells and crack eggs. Cook until set.",
+        },
       ],
       recipeCategory: ["Breakfast"],
       recipeCuisine: ["Middle Eastern"],
@@ -668,11 +676,20 @@ describe("ldJsonToRecipeImport", () => {
       ],
       recipeInstructions: [
         { "@type": "HowToStep", text: "Preheat the oven to 400 degrees F." },
-        { "@type": "HowToStep", text: "Mix Parmesan, salt, garlic powder, paprika, and pepper." },
+        {
+          "@type": "HowToStep",
+          text: "Mix Parmesan, salt, garlic powder, paprika, and pepper.",
+        },
         { "@type": "HowToStep", text: "Blot dry the cut-side of potatoes." },
-        { "@type": "HowToStep", text: "Drizzle potatoes with oil and coat with seasoning." },
+        {
+          "@type": "HowToStep",
+          text: "Drizzle potatoes with oil and coat with seasoning.",
+        },
         { "@type": "HowToStep", text: "Arrange potatoes cut-side down." },
-        { "@type": "HowToStep", text: "Bake 15-20 min, flip, bake 15-20 more." },
+        {
+          "@type": "HowToStep",
+          text: "Bake 15-20 min, flip, bake 15-20 more.",
+        },
         { "@type": "HowToStep", text: "Serve hot and enjoy!" },
       ],
       nutrition: {

@@ -72,7 +72,8 @@ function SettingsPage() {
               Kitchen Staples
             </h2>
             <p className="mt-1 text-sm text-secondary-2">
-              Items you always have on hand will be excluded from shopping lists.
+              Items you always have on hand will be excluded from shopping
+              lists.
             </p>
 
             {session?.user ? (

@@ -6,7 +6,7 @@ import { z } from "zod/v4";
  * @see https://jsonld.com/recipe/
  */
 const HowToStepSchema = z.object({
-  "@type": z.literal("HowToStep"),
+  "@type": z.enum(["HowToStep"]),
   name: z.string().optional(),
   text: z.string(),
   url: z.string().optional(),
@@ -14,7 +14,7 @@ const HowToStepSchema = z.object({
 });
 
 const NutritionSchema = z.object({
-  "@type": z.literal("NutritionInformation"),
+  "@type": z.enum(["NutritionInformation"]),
   calories: z.string().optional(),
   fatContent: z.string().optional(),
   saturatedFatContent: z.string().optional(),
@@ -28,11 +28,11 @@ const NutritionSchema = z.object({
 });
 
 const RecipeLdJsonSchema = z.object({
-  "@context": z.literal("https://schema.org"),
-  "@type": z.literal("Recipe"),
+  "@context": z.enum(["https://schema.org"]),
+  "@type": z.enum(["Recipe"]),
   name: z.string(),
   description: z.string().optional(),
-  image: z.union([z.string(), z.array(z.string())]).optional(),
+  image: z.array(z.string()).optional(),
   author: z
     .object({
       "@type": z.enum(["Person", "Organization"]),
@@ -64,23 +64,16 @@ export const RecipeImportSchema = z.object({
     .optional()
     .describe('e.g., "Dinner", "Dessert", "Breakfast"'),
   servings: z.string().optional().describe('e.g., "4 servings"'),
-  prepTime: z
-    .string()
-    .optional()
-    .describe('ISO 8601 duration, e.g., "PT15M"'),
-  cookTime: z
-    .string()
-    .optional()
-    .describe('ISO 8601 duration, e.g., "PT30M"'),
-  totalTime: z
-    .string()
-    .optional()
-    .describe('ISO 8601 duration, e.g., "PT45M"'),
+  prepTime: z.string().optional().describe('ISO 8601 duration, e.g., "PT15M"'),
+  cookTime: z.string().optional().describe('ISO 8601 duration, e.g., "PT30M"'),
+  totalTime: z.string().optional().describe('ISO 8601 duration, e.g., "PT45M"'),
   imageUrl: z.string().optional().describe("Image URL if available"),
   ingredients: z
     .array(
       z.object({
-        rawText: z.string().describe("Full ingredient text, e.g. '2 cups flour'"),
+        rawText: z
+          .string()
+          .describe("Full ingredient text, e.g. '2 cups flour'"),
         name: z.string().optional().describe("Ingredient name, e.g. 'flour'"),
         quantity: z.number().optional().describe("Numeric quantity, e.g. 2"),
         unit: z.string().optional().describe("Unit of measure, e.g. 'cups'"),

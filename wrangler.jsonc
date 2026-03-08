@@ -1,10 +1,22 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "recipes",
-  "compatibility_date": "2026-03-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry",
-  "observability": {
-    "enabled": true
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "recipes",
+	"compatibility_date": "2026-03-01",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "@tanstack/react-start/server-entry",
+	"observability": {
+		"enabled": true
+	},
+	"r2_buckets": [
+		{
+			"binding": "RECIPE_IMAGES",
+			"bucket_name": "recipe-images",
+			"remote": true,
+		},
+	],
+	"vars": {
+		"R2_PUBLIC_URL": "https://recipe-images.kschoon.me"
+	}
 }

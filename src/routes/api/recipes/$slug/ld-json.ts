@@ -8,7 +8,10 @@ import {
 } from "#/server/db/schema";
 import { eq, asc } from "drizzle-orm";
 
-async function handleLdJson(_request: Request, slug: string): Promise<Response> {
+async function handleLdJson(
+  _request: Request,
+  slug: string,
+): Promise<Response> {
   const [recipe] = await db
     .select()
     .from(recipes)
@@ -92,8 +95,7 @@ async function handleLdJson(_request: Request, slug: string): Promise<Response> 
       nutritionInfo.proteinContent = `${nutrition.protein} g`;
     if (nutrition.carbohydrates != null)
       nutritionInfo.carbohydrateContent = `${nutrition.carbohydrates} g`;
-    if (nutrition.fat != null)
-      nutritionInfo.fatContent = `${nutrition.fat} g`;
+    if (nutrition.fat != null) nutritionInfo.fatContent = `${nutrition.fat} g`;
     if (nutrition.saturatedFat != null)
       nutritionInfo.saturatedFatContent = `${nutrition.saturatedFat} g`;
     if (nutrition.fiber != null)

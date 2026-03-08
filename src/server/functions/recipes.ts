@@ -24,9 +24,7 @@ function slugify(name: string): string {
 }
 
 export const getRecipes = createServerFn({ method: "GET" })
-  .inputValidator(
-    (input: { search?: string; category?: string }) => input,
-  )
+  .inputValidator((input: { search?: string; category?: string }) => input)
   .handler(async ({ data }) => {
     const user = await getAuthenticatedUser();
     const conditions = [eq(recipes.userId, user.id)];
@@ -104,7 +102,12 @@ export const getRecipeBySlug = createServerFn({ method: "GET" })
       .where(eq(recipeNutrition.recipeId, recipe.id))
       .limit(1);
 
-    return { ...recipe, ingredients, steps: stepsWithIngredients, nutrition: nutrition ?? null };
+    return {
+      ...recipe,
+      ingredients,
+      steps: stepsWithIngredients,
+      nutrition: nutrition ?? null,
+    };
   });
 
 export type RecipeInput = {
@@ -175,21 +178,23 @@ export const createRecipe = createServerFn({ method: "POST" })
 
     if (data.ingredients.length > 0) {
       await db.insert(recipeIngredients).values(
-        data.ingredients.map((ing: RecipeInput["ingredients"][0], i: number) => ({
-          recipeId: recipe!.id,
-          sortOrder: i,
-          rawText: ing.rawText,
-          name: ing.name,
-          quantity: ing.quantity,
-          unit: ing.unit,
-        })),
+        data.ingredients.map(
+          (ing: RecipeInput["ingredients"][0], i: number) => ({
+            recipeId: recipe.id,
+            sortOrder: i,
+            rawText: ing.rawText,
+            name: ing.name,
+            quantity: ing.quantity,
+            unit: ing.unit,
+          }),
+        ),
       );
     }
 
     if (data.steps.length > 0) {
       await db.insert(recipeSteps).values(
         data.steps.map((step: RecipeInput["steps"][0], i: number) => ({
-          recipeId: recipe!.id,
+          recipeId: recipe.id,
           sortOrder: i,
           text: step.text,
           sectionName: step.sectionName,
@@ -204,13 +209,13 @@ export const createRecipe = createServerFn({ method: "POST" })
         const insertedSteps = await db
           .select({ id: recipeSteps.id })
           .from(recipeSteps)
-          .where(eq(recipeSteps.recipeId, recipe!.id))
+          .where(eq(recipeSteps.recipeId, recipe.id))
           .orderBy(asc(recipeSteps.sortOrder));
 
         const insertedIngredients = await db
           .select({ id: recipeIngredients.id })
           .from(recipeIngredients)
-          .where(eq(recipeIngredients.recipeId, recipe!.id))
+          .where(eq(recipeIngredients.recipeId, recipe.id))
           .orderBy(asc(recipeIngredients.sortOrder));
 
         const junctionRows: {
@@ -218,7 +223,7 @@ export const createRecipe = createServerFn({ method: "POST" })
           recipeIngredientId: number;
         }[] = [];
         for (let i = 0; i < data.steps.length; i++) {
-          const indices = data.steps[i]!.ingredientIndices ?? [];
+          const indices = data.steps[i].ingredientIndices ?? [];
           for (const idx of indices) {
             if (insertedSteps[i] && insertedIngredients[idx]) {
               junctionRows.push({
@@ -237,12 +242,12 @@ export const createRecipe = createServerFn({ method: "POST" })
     // Insert nutrition if provided
     if (data.nutrition) {
       await db.insert(recipeNutrition).values({
-        recipeId: recipe!.id,
+        recipeId: recipe.id,
         ...data.nutrition,
       });
     }
 
-    return recipe!;
+    return recipe;
   });
 
 export const updateRecipe = createServerFn({ method: "POST" })
@@ -296,14 +301,16 @@ export const updateRecipe = createServerFn({ method: "POST" })
       .where(eq(recipeIngredients.recipeId, existing.id));
     if (data.ingredients.length > 0) {
       await db.insert(recipeIngredients).values(
-        data.ingredients.map((ing: RecipeInput["ingredients"][0], i: number) => ({
-          recipeId: existing.id,
-          sortOrder: i,
-          rawText: ing.rawText,
-          name: ing.name,
-          quantity: ing.quantity,
-          unit: ing.unit,
-        })),
+        data.ingredients.map(
+          (ing: RecipeInput["ingredients"][0], i: number) => ({
+            recipeId: existing.id,
+            sortOrder: i,
+            rawText: ing.rawText,
+            name: ing.name,
+            quantity: ing.quantity,
+            unit: ing.unit,
+          }),
+        ),
       );
     }
 
@@ -352,7 +359,7 @@ export const updateRecipe = createServerFn({ method: "POST" })
           recipeIngredientId: number;
         }[] = [];
         for (let i = 0; i < data.steps.length; i++) {
-          const indices = data.steps[i]!.ingredientIndices ?? [];
+          const indices = data.steps[i].ingredientIndices ?? [];
           for (const idx of indices) {
             if (insertedSteps[i] && insertedIngredients[idx]) {
               junctionRows.push({
@@ -403,8 +410,6 @@ export const getCategories = createServerFn({ method: "GET" }).handler(
       .where(eq(recipes.userId, user.id))
       .groupBy(recipes.category);
 
-    return rows
-      .map((r) => r.category)
-      .filter((c): c is string => c !== null);
+    return rows.map((r) => r.category).filter((c): c is string => c !== null);
   },
 );

@@ -30,10 +30,7 @@ export default function MobileHeader() {
           )}
         </Link>
       ) : (
-        <Link
-          to="/auth/signin"
-          className="text-sm font-medium text-primary-1"
-        >
+        <Link to="/auth/signin" className="text-sm font-medium text-primary-1">
           Sign in
         </Link>
       )}

@@ -16,8 +16,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  type DragEndEvent,
 } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
@@ -120,9 +120,9 @@ function ShoppingListPage() {
   const [confirmClearListId, setConfirmClearListId] = useState<number | null>(
     null,
   );
-  const [confirmDeleteListId, setConfirmDeleteListId] = useState<
-    number | null
-  >(null);
+  const [confirmDeleteListId, setConfirmDeleteListId] = useState<number | null>(
+    null,
+  );
 
   const { data: lists, isLoading } = useQuery({
     queryKey: ["shopping-lists"],
@@ -181,9 +181,8 @@ function ShoppingListPage() {
   });
 
   const reorderMutation = useMutation({
-    mutationFn: (data: {
-      updates: Array<{ id: number; sortOrder: number }>;
-    }) => reorderShoppingListItems({ data }),
+    mutationFn: (data: { updates: Array<{ id: number; sortOrder: number }> }) =>
+      reorderShoppingListItems({ data }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["shopping-lists"] }),
   });
@@ -517,9 +516,7 @@ function SortableShoppingItem({
       >
         <div
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 transition-colors ${
-            item.checked
-              ? "border-primary-1 bg-primary-1"
-              : "border-border-1"
+            item.checked ? "border-primary-1 bg-primary-1" : "border-border-1"
           }`}
         >
           {item.checked && <Check size={14} className="text-white" />}

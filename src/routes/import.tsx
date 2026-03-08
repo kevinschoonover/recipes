@@ -1,11 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Link as LinkIcon,
-  FileText,
-  Camera,
-  Loader2,
-} from "lucide-react";
+import { Link as LinkIcon, FileText, Camera, Loader2 } from "lucide-react";
 import { createRecipe } from "#/server/functions/recipes";
 import type { RecipeInput } from "#/server/functions/recipes";
 import { useQueryClient } from "@tanstack/react-query";
@@ -66,7 +61,9 @@ function ImportPage() {
           nutrition = {
             calories: parseNutritionValue(docNutrition.calories),
             protein: parseNutritionValue(docNutrition.proteinContent),
-            carbohydrates: parseNutritionValue(docNutrition.carbohydrateContent),
+            carbohydrates: parseNutritionValue(
+              docNutrition.carbohydrateContent,
+            ),
             fat: parseNutritionValue(docNutrition.fatContent),
             saturatedFat: parseNutritionValue(docNutrition.saturatedFatContent),
             fiber: parseNutritionValue(docNutrition.fiberContent),
@@ -85,7 +82,10 @@ function ImportPage() {
           prepTime: data.prepTime,
           cookTime: data.cookTime,
           totalTime: data.totalTime,
-          document: typeof data.document === "string" ? data.document : JSON.stringify(data.document),
+          document:
+            typeof data.document === "string"
+              ? data.document
+              : JSON.stringify(data.document),
           importedFrom: tab === "url" ? urlInput : undefined,
           ingredients: data.ingredients ?? [],
           steps: data.steps ?? [],
@@ -111,9 +111,7 @@ function ImportPage() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-6">
         <div className="animate-rise-in">
-          <h1 className="text-2xl font-bold text-secondary-1">
-            Review Import
-          </h1>
+          <h1 className="text-2xl font-bold text-secondary-1">Review Import</h1>
           <p className="mt-1 text-sm text-secondary-2">
             Check the extracted recipe and save it.
           </p>

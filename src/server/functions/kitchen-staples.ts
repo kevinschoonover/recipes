@@ -77,9 +77,7 @@ export const getKitchenStaples = createServerFn({ method: "GET" }).handler(
 );
 
 export const addStaple = createServerFn({ method: "POST" })
-  .inputValidator(
-    (input: { name: string; category?: string }) => input,
-  )
+  .inputValidator((input: { name: string; category?: string }) => input)
   .handler(async ({ data }) => {
     const user = await getAuthenticatedUser();
     const [staple] = await db
@@ -90,7 +88,7 @@ export const addStaple = createServerFn({ method: "POST" })
         category: data.category,
       })
       .returning();
-    return staple!;
+    return staple;
   });
 
 export const removeStaple = createServerFn({ method: "POST" })
@@ -100,10 +98,7 @@ export const removeStaple = createServerFn({ method: "POST" })
     await db
       .delete(kitchenStaples)
       .where(
-        and(
-          eq(kitchenStaples.id, data.id),
-          eq(kitchenStaples.userId, user.id),
-        ),
+        and(eq(kitchenStaples.id, data.id), eq(kitchenStaples.userId, user.id)),
       );
     return { success: true };
   });

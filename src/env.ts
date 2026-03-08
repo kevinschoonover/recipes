@@ -13,6 +13,7 @@ export const env = createEnv({
     DISCORD_CLIENT_ID: z.string(),
     DISCORD_CLIENT_SECRET: z.string(),
     ANTHROPIC_API_KEY: z.string().optional(),
+    GOOGLE_AI_API_KEY: z.string().optional(),
   },
   clientPrefix: "VITE_",
   client: {

@@ -25,7 +25,6 @@ export function extractLdJsonFromHtml(
 ): Record<string, unknown> | null {
   const root = parse(html);
   const scripts = root.querySelectorAll('script[type="application/ld+json"]');
-  console.log(scripts)
 
   for (const script of scripts) {
     try {
@@ -36,16 +35,16 @@ export function extractLdJsonFromHtml(
 
       // @graph array (common in Yoast, WordPress, etc.)
       if (data["@graph"] && Array.isArray(data["@graph"])) {
-        const recipe = data["@graph"].find(
-          (item: Record<string, unknown>) => isRecipeType(item["@type"]),
+        const recipe = data["@graph"].find((item: Record<string, unknown>) =>
+          isRecipeType(item["@type"]),
         );
         if (recipe) return recipe;
       }
 
       // Array of objects
       if (Array.isArray(data)) {
-        const recipe = data.find(
-          (item: Record<string, unknown>) => isRecipeType(item["@type"]),
+        const recipe = data.find((item: Record<string, unknown>) =>
+          isRecipeType(item["@type"]),
         );
         if (recipe) return recipe;
       }
@@ -151,9 +150,8 @@ export function ldJsonToRecipeImport(
         : undefined;
     if (authorObj?.name) {
       document.author = {
-        "@type": (authorObj["@type"] === "Organization"
-          ? "Organization"
-          : "Person") as "Person" | "Organization",
+        "@type":
+          authorObj["@type"] === "Organization" ? "Organization" : "Person",
         name: authorObj.name as string,
       };
     }
